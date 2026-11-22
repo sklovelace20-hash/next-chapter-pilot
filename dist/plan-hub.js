@@ -3,6 +3,7 @@ import { everydayTools, learningCards } from './everyday-tools.js';
 import { topicRoutes, viewRoutes, valuesExerciseRoute } from './routes.js';
 import { answerSelection } from './answer-selection.js';
 import { profile } from './discovery-content.js';
+import { personalityResults } from './personality-results.js';
 import { personalityEvidence } from './deeper.js';
 import { mirrorSources, practiceFor } from './growth.js';
 import { taskList } from './journey-content.js';
@@ -53,7 +54,8 @@ export function hubEvidence(state, section) {
   const common = [['Current priority', confirmed.priority], ['What I want to try', confirmed.tryNext]];
   const evidence = {
     personality: [
-      ...personalityEvidence(d), ...profile(d.traits || {}).filter((axis) => axis.count).map((axis) => [axis.poles.join(' / '), axis.label]),
+      ...personalityEvidence(d), ...profile(d.traits || {}).filter((axis) => axis.count).map((axis) => [axis.poles.join(' / '),
+        axis.side === null ? axis.band : axis.band + ' toward ' + axis.label.toLowerCase()]),
       ['Accepted assessment summary', state.assessment?.summary], ['My interpretation', state.journey?.personalityNote], ['Strengths I named', [...(d.strengths || []), d.otherStrength].filter(Boolean).join(', ')],
       ['Strength in action', d.strengthExample], ['Strengths I confirmed', confirmed.strength], ['Personality activity reflection', state.planHub?.personality?.personalityActivity]
     ],
@@ -74,7 +76,7 @@ export function hubEvidence(state, section) {
   return { entries: validPairs([...common, ...(evidence[section] || []), ...Object.entries(state.planHub?.[section]?.responses || {}), ['My values exercise', state.planHub?.[section]?.tradeoff]]), selected, skills };
 }
 
-export function planHub({ host, read, save, node, button, notify, activities, accomplishments, openPage, openAccomplishments, openLibrary, addPractice, assessment, planSettings }) {
+export function planHub({ host, read, save, node, button, notify, activities, accomplishments, openPage, openAccomplishments, openLibrary, addPractice, assessment, planSettings, refreshPersonality }) {
   function pageLink(label, path, className) {
     const link = node('a', label, className);
     link.href = path;
@@ -201,7 +203,9 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
       }
       const rows = node('div', '', 'personality-options');
       rows.append(assessment(), pageLink('Browse resources', viewRoutes.library, 'topic-page-link'));
-      panel.append(shortcuts, rows);
+      const results = disclosure(node, 'Your Personality results');
+      results.append(personalityResults(state.discovery?.traits || {}, node, refreshPersonality));
+      panel.append(shortcuts, results, rows);
     }
     if (key === 'reflection') {
       panel.append(node('p', 'Use your answers to decide what you can control, what you can influence, and what you may need to leave open.'),

@@ -1,12 +1,13 @@
 import { everydayTools } from './everyday-tools.js';
 import { valueCards } from './value-cards.js';
 import { aiMirror } from './ai-mirror.js';
+import { personalityResults } from './personality-results.js';
 import { discoveryTopics } from './routes.js';
 import { mirrorSources, nextDraft, practiceFor, profileFields } from './growth.js';
 import { traits, strengths, reflections, careerQuestions,
-  priorities, morningSets, profile, careerIdeas } from './discovery-content.js';
+  priorities, morningSets, careerIdeas } from './discovery-content.js';
 
-export function discovery({ get, node, button, read, save, notify, applyPractice, openPage }) {
+export function discovery({ get, node, button, read, save, notify, applyPractice, openPage, refreshPersonality }) {
   let current = 'profile';
   let promptIndex = 0;
   const data = () => read().discovery || {};
@@ -99,10 +100,8 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
       body.append(card);
       return;
     }
-    const card = panel('Your natural preferences', 'Think of these as starting points to compare with your own experience.');
-    for (const axis of profile(answers)) {
-      if (axis.count) card.append(node('p', `${axis.poles.join(' / ')} · ${axis.label}`));
-    }
+    const card = panel('Your Personality results');
+    card.append(personalityResults(answers, node, refreshPersonality));
     card.append(button('Retake personality questions', () => { if (write({ traits: {} })) open('profile'); }, 'quiet'));
     const strengthCard = panel('What comes naturally to you?', 'Choose the strengths you use, then give one example so you can see them in action.');
     const form = document.createElement('form');

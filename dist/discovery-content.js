@@ -82,10 +82,18 @@ export const morningSets = [
 
 export function profile(answers) {
   return traits.map((trait, axis) => {
-    const responses = trait.questions.map((_, index) => answers[`${axis}-${index}`]).filter(Boolean);
-    const total = responses.reduce((sum, value) => sum + Number(value), 0);
-    const side = total > 0 ? 0 : total < 0 ? 1 : null;
-    return { ...trait, count: responses.length, label: side === null ? 'Flexible across both' : trait.poles[side],
+    const responses = trait.questions.map((_, index) => answers[`${axis}-${index}`])
+      .filter(value => [1, 0, -1, '1', '0', '-1'].includes(value)).map(Number);
+    const left = responses.filter(value => value === 1).length;
+    const right = responses.filter(value => value === -1).length;
+    const count = responses.length;
+    const margin = Math.abs(left - right);
+    const side = left === right ? null : left > right ? 0 : 1;
+    const band = count < Math.ceil(trait.questions.length / 2) ? 'Partial'
+      : side === null ? 'Context-dependent'
+        : margin >= 2 && margin * 2 >= count ? 'Clearer lean' : 'Slight lean';
+    return { ...trait, count, left, right, neutral: count - left - right, side, band,
+      label: side === null ? 'Flexible across both' : trait.poles[side],
       exercise: side === null ? '' : trait.practice[side] };
   });
 }

@@ -111,6 +111,7 @@ export function nextDraft(state) {
     strength: [...(d.strengths || []), d.otherStrength].filter(Boolean).join(', '),
     tryNext: d.insightPractice || state.roadmap?.practice || '',
     skill: state.roadmap?.skill || '',
-    clarification: d.insightClarification || ''
+    clarification: d.insightClarification || '',
+    acceptedReflection: state.growth?.personalityReflection
   };
 }

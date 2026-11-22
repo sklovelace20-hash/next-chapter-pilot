@@ -939,3 +939,15 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
   #vault > .section-intro h1 { font-size: clamp(1.65rem, 7vw, 2rem); }
   #vault > .section-intro p { margin-top: 5px; }
 }
+
+.personality-results > p:first-child { margin: 8px 0; }
+.personality-results > details { padding: 10px 12px; }
+.personality-result > summary { cursor: pointer; }
+.personality-result-lean { display: block; margin: 4px 0 0 1em; font-weight: 500; }
+.personality-result h4 { margin: 14px 0 3px; }
+.personality-result p { margin: 4px 0 8px; }
+
+.personality-refresh { margin-top: 12px; }
+.personality-refresh > .inline-status:empty { display: none; }
+.personality-refresh h3 { margin: 14px 0 6px; }
+.personality-refresh h4 { margin-bottom: 4px; }

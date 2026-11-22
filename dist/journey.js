@@ -1,11 +1,12 @@
 import { valueCards } from './value-cards.js';
-import { traits, profile } from './discovery-content.js';
+import { traits } from './discovery-content.js';
+import { personalityResults } from './personality-results.js';
 import { areas, rounds, ideaQuestions, deeperIdeaQuestions, taskList } from './journey-content.js';
 import { timelineFor } from './project-tracker.js';
 
 const quiz = traits.flatMap((trait, axis) => trait.questions.map((parts, index) => [`${axis}-${index}`, ...parts]));
 
-export function journey({ host, read, save, node, button, notify, open, home, finish, assessment, tailorPractice }) {
+export function journey({ host, read, save, node, button, notify, open, home, finish, assessment, tailorPractice, refreshPersonality }) {
   const data = () => read().journey || {};
   const change = (patch) => {
     if (save({ ...read(), journey: { ...data(), ...patch } })) render();
@@ -74,10 +75,7 @@ export function journey({ host, read, save, node, button, notify, open, home, fi
     if (state.question) card.append(button('Previous question', () => change({ question: state.question - 1 }), 'quiet'));
   }
   function feedback(card) {
-    card.append(node('h2', 'What your answers suggest'), node('p', 'These are preferences from this exercise. Where do they fit your experience, and where would you describe yourself differently?'));
-    for (const axis of profile(read().discovery?.traits || {})) {
-      card.append(node('h3', axis.poles.join(' / ')), node('p', axis.label));
-    }
+    card.append(node('h2', 'Your Personality results'), personalityResults(read().discovery?.traits || {}, node, refreshPersonality));
     const { element, action } = form(card, 'Confirm and choose a direction', () => change({ personalityNote: clarification.value.trim(), stage: 'areas' }));
     const clarification = field(element, 'What would you confirm, correct, or add?', data().personalityNote);
     element.append(action);

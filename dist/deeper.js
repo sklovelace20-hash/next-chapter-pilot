@@ -28,9 +28,9 @@ export function weekKey(date) {
 export function personalityEvidence(discovery = {}) {
   return traits.flatMap((trait, axis) => trait.questions.flatMap(([question, left, right], index) => {
     const answer = discovery.traits?.[`${axis}-${index}`];
-    if (answer === '1') return [[question, left]];
-    if (answer === '-1') return [[question, right]];
-    if (answer === '0') return [[question, 'It depends']];
+    if (answer === '1' || answer === 1) return [[question, left]];
+    if (answer === '-1' || answer === -1) return [[question, right]];
+    if (answer === '0' || answer === 0) return [[question, 'It depends']];
     return [];
   }));
 }

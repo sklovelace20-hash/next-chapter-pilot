@@ -12,6 +12,7 @@ import { practiceFor, profileFields } from './growth.js';
 import { funPage } from './fun.js';
 import { welcomeFlow } from './welcome.js';
 import { discovery } from './discovery.js';
+import { personalityRefresh } from './personality-refresh.js';
 
 const get = (id) => document.getElementById(id);
 const key = 'next-chapter-pilot-v1';
@@ -179,11 +180,12 @@ function applyPractice(title, practice, section = 'practice', replaceSkill = fal
   }
 }
 
-const discover = discovery({ get, node, button, read: () => state, save, notify, applyPractice, openPage });
+const refreshPersonality = () => personalityRefresh({ read: () => state, save, node, button });
+const discover = discovery({ get, node, button, read: () => state, save, notify, applyPractice, openPage, refreshPersonality });
 const showAssessment = () => assessmentPanel({ read: () => state, save, node, button, notify });
 const startingPoint = journey({
   host: get('journey'), read: () => state, save, node, button, notify,
-  open: () => show('journey'), home: dashboard, planSettings: () => tools.planSettings(), assessment: showAssessment,
+  open: () => show('journey'), home: dashboard, planSettings: () => tools.planSettings(), assessment: showAssessment, refreshPersonality,
   tailorPractice: (target) => requestInsight({ mode: 'plan-tailoring',
     input: JSON.stringify({ target, acceptedAssessment: state.assessment?.summary }) }),
   finish(targets) {
@@ -213,7 +215,7 @@ const output = planHub({ host: get('output'), read: () => state, save, node, but
   activities: () => planActivities({ read: () => state, node, save }),
   accomplishments: () => achievements.listing({ all: true }),
   openPage, openAccomplishments: () => tools.go('accomplishments'), openLibrary: () => tools.go('library'),
-  planSettings: () => tools.planSettings(), assessment: showAssessment, addPractice: (title, practice) => applyPractice(title, practice, 'practice', true) });
+  planSettings: () => tools.planSettings(), assessment: showAssessment, refreshPersonality, addPractice: (title, practice) => applyPractice(title, practice, 'practice', true) });
 const tools = workspace({ get, show, read: () => state, save, node, button, notify, dashboard, discover: (section) => section ? discover.open(section) : discover.render(), beginVisit: deeper.reset, output: output.render, library: resourceLibrary.render, accomplishments: achievements.render });
 
 function dashboard() {
