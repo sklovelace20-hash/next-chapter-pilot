@@ -658,6 +658,12 @@ main :is(.journey-card,.accomplishment-card,.settings-panel)>:last-child { margi
 #discover > .discover-menu button { padding-inline: 9px; }
 .reflection-next { margin-block: 16px; padding: 14px 16px; border-radius: 12px; background: #f3eef8; }
 .reflection-next p { margin: 6px 0 0; }
+@media (max-width: 600px) {
+  .reflection-result > h3:first-child, .reflection-next > h3 { margin: 0; }
+  .reflection-overview { margin: 5px 0 0; line-height: 1.45; }
+  .reflection-next { margin-block: 10px; padding: 10px 12px; }
+  .reflection-next p { margin-top: 4px; line-height: 1.45; }
+}
 
 #workspace-nav {
   position: sticky; top: 0; z-index: 6;

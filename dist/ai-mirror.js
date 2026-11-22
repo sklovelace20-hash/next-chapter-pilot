@@ -13,7 +13,7 @@ export function aiMirror({ sources, node, button, accept, edit }) {
   chooser.append(picks.wrapper);
   const status = node('p', '');
   status.setAttribute('role', 'status');
-  const result = node('div', '');
+  const result = node('div', '', 'reflection-result');
   let lastReflection;
   const generate = button('Generate reflection', async () => {
     const selected = picks.selected();
@@ -34,7 +34,9 @@ export function aiMirror({ sources, node, button, accept, edit }) {
       }
       const { draft } = lastReflection;
       status.textContent = '';
-      result.append(node('h3', 'What I heard'), node('p', draft.overview));
+      const heading = node('h3', 'What I heard');
+      heading.tabIndex = -1;
+      result.append(heading, node('p', draft.overview, 'reflection-overview'));
       if (draft.profile.tryNext.trim()) {
         const next = node('div', '', 'reflection-next');
         next.append(node('h3', 'One step to try'), node('p', draft.profile.tryNext));
@@ -52,8 +54,13 @@ export function aiMirror({ sources, node, button, accept, edit }) {
       const actions = node('div', '', 'actions');
       actions.append(button('Accept as written', () => accept(draft)), button('Edit before accepting', () => edit(draft), 'quiet'), button('Skip suggestion', () => { result.replaceChildren(); chooser.open = true; generate.focus(); }, 'quiet'));
       result.append(profile, node('p', 'Does this fit? Accept it as written or change the wording before it becomes part of your profile.'), actions);
-      result.querySelector('h3').tabIndex = -1;
-      result.querySelector('h3').focus();
+      if (window.matchMedia('(max-width: 600px)').matches) {
+        chooser.open = false;
+        heading.focus({ preventScroll: true });
+        heading.scrollIntoView({ block: 'start' });
+      } else {
+        heading.focus();
+      }
     } catch (error) {
       status.textContent = error instanceof SyntaxError ? 'The AI overview is unavailable right now.' : error.message;
     } finally {
