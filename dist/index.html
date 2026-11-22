@@ -12,15 +12,27 @@
 <script type="module" src="/app.js"></script>
 </head>
 <body>
-<header><a class="brand" href="/"><span aria-hidden="true">✳</span> Next Chapter</a><button class="quiet" id="settings">Your data</button></header>
+<header><a class="brand" href="/"><img src="/mountain-book.webp" alt="Next Chapter"></a><button class="quiet" id="settings">Your data</button></header>
 <main>
+<details class="ai-note"><summary>Disclaimer</summary><p>When you ask for AI insights, your answers and relevant reflection summaries are sent to OpenAI. AI can miss the mark. Keep what feels right, change the wording, or skip the suggestion.</p></details>
 <section id="home">
 <div class="hero home-hero">
-<div><p class="eyebrow">A PERSONAL PLANNING SPACE</p><h1 id="home-title" tabindex="-1">Make room for<br><em>what matters.</em></h1><p>Turn what you value into a 90-day goal and one action you can take this week.</p><div class="actions"><button id="discover-start">Start with personality</button><button class="quiet" id="start">Build my dashboard</button></div></div>
+<div><h1 id="home-title" tabindex="-1">Hey there.</h1><p id="welcome-intro">Up for digging a little deeper? You’re in the right place. Grab a shovel. Pickaxe optional.</p><p id="welcome-detail">When you request AI insights, AI reviews your answers. You decide what fits.</p><div class="actions"><button id="welcome-start">Let’s dig in</button><button class="quiet" id="welcome-explore">I’d rather look around</button><button class="quiet" id="home-fun">Find something fun</button></div></div>
 <div class="hero-art" aria-hidden="true"><img src="/evening-trail.webp" alt="" width="1200" height="800" fetchpriority="high"></div>
 </div>
-<div class="actions"><button id="home-library" class="quiet">Library</button><button id="home-accomplishments" class="quiet">Accomplishments</button></div><div id="home-check-in"></div><div class="features"><article><span>◎</span><h2>Find your focus</h2><p>Five questions about your values, your season of life, and the time you have.</p></article><article><span>↳</span><h2>Take one action</h2><p>Make a weekly commitment you can fit around the things you need to protect.</p></article><article><span>◷</span><h2>Review your week</h2><p>Log what happened and adjust your plan as you learn what works.</p></article></div>
+
+<div id="home-check-in" hidden></div>
+<section id="home-explore" aria-labelledby="explore-title" hidden>
+<h2 id="explore-title" tabindex="-1">What are you curious about?</h2>
+<div class="features">
+<article><h3>See what makes you tick</h3><p>Explore your personality and put words to patterns you’ve noticed.</p><button id="discover-start" class="quiet">Explore personality</button></article>
+<article><h3>Figure out what matters now</h3><p>Sort through your values and find one you want to make room for.</p><button id="home-values" class="quiet">Try the values exercise</button></article>
+<article><h3>Give an idea somewhere to go</h3><p>Work through guided questions and turn what you learn into a plan.</p><button id="start" class="quiet">Start a guided plan</button></article>
+</div>
+<div class="actions"><button id="home-library" class="quiet">Browse the library</button><button id="home-accomplishments" class="quiet">Smile File</button></div>
 </section>
+</section>
+<section id="welcome" class="panel welcome-panel" hidden></section>
 <section id="journey" hidden></section>
 <section id="setup" class="panel" hidden>
 <p id="step" class="eyebrow"></p><progress id="progress" max="5"></progress>
@@ -31,11 +43,43 @@
 <details id="plan-context" class="follow-up"></details><form id="plan"><label>90-day goal<textarea name="goal" required></textarea></label><label>Weekly action<textarea name="action" required></textarea></label><label>What to track<input name="tracker" required></label><label>Reflection prompt<textarea name="prompt" required></textarea></label><div class="actions"><button type="button" class="quiet" id="cancel-edit">Back</button><button>Save plan</button></div></form>
 </section>
 <nav id="workspace-nav" aria-label="Dashboard views" hidden>
-<button data-view="dashboard">Today</button><button data-view="discover">Discover</button><button data-view="roadmap">Roadmap</button><button data-view="output">Plan hub</button><button data-view="library">Library</button><button data-view="accomplishments">Accomplishments</button><button data-view="vault">Privacy vault</button>
+<button data-view="dashboard">Today</button><button data-view="discover">Discover</button><button data-view="roadmap">Roadmap</button><button data-view="output">Plan hub</button><button id="fun-nav" data-view="fun">Fun</button><button data-view="library">Library</button><button data-view="accomplishments">Smile File</button><button data-view="vault">Privacy vault</button>
 </nav>
 <section id="dashboard" hidden></section><section id="discover" hidden></section>
 <section id="roadmap" hidden></section><section id="output" hidden></section><section id="library" hidden></section><section id="accomplishments" hidden></section>
 <section id="vault" hidden></section>
+<section id="fun" hidden>
+<div class="section-intro">
+<h1 id="fun-title" tabindex="-1">Make room for fun.</h1>
+<p>What would you do today just because you’d enjoy it? Five minutes counts.</p>
+</div>
+<div class="fun-body">
+<article class="fun-reflection bucket-card">
+<h2>Bucket List Bingo</h2><p>Big dreams and little joys belong on the same board. Add something you’d love to do, then tap its square when you’ve done it. Three in a row? Bingo.</p>
+<form id="bucket-form"><label>What’s on your list?<input id="bucket-name" maxlength="160" required placeholder="Go to a college game"></label><button>Add to my board</button></form>
+<details id="bucket-inspo"><summary>Need inspo?</summary></details>
+<p id="bucket-progress"></p><div id="bucket-board" aria-label="Bucket list board" role="group"></div><div class="actions"><button id="bucket-prev" class="quiet">Previous board</button><button id="bucket-next" class="quiet">Next board</button></div><p id="bucket-status" role="status"></p>
+</article>
+<article class="fun-reflection">
+<h2>What gets in the way today?</h2>
+<p>Pick what sounds familiar and try one small way around it.</p>
+<div id="fun-barriers" class="actions" role="group" aria-label="What gets in the way"></div>
+<p id="fun-reframe" role="status" hidden></p>
+<details class="follow-up"><summary>Give me something to think about</summary><p>What did you love doing before you cared whether you were good at it? What would the five-minute version look like now?</p></details>
+</article>
+<article class="fun-collection" aria-labelledby="fun-collection-title">
+<h2 id="fun-collection-title">Find something fun to do</h2>
+<p>Every idea here is free using what you already have.</p>
+<div class="fun-controls">
+<label for="fun-filter">What sounds good?</label>
+<select id="fun-filter"><option value="">Anything</option><option>Quick</option><option>Outdoors</option><option>Creative</option><option>With someone</option><option>Low energy</option></select>
+<button id="fun-random">Surprise me</button>
+</div>
+<article id="fun-pick" class="fun-pick" aria-live="polite" aria-atomic="true" hidden></article>
+<div id="fun-ideas" class="features"></div>
+</article>
+</div>
+</section>
 <dialog id="share" aria-labelledby="share-title">
 <h2 id="share-title">Share an update</h2>
 <p>Choose what to include. The recipient gets a copy they can keep.</p>
@@ -46,8 +90,18 @@
 <p id="share-feedback" role="status"></p>
 </dialog>
 </main>
-<footer>Next Chapter <span aria-hidden="true">·</span> Saved on this browser</footer>
-<dialog id="data"><h2>Your data</h2><p>Your dashboard and Discover answers are stored in this browser profile. The vault uses a separate passphrase. The JSON export includes the encrypted vault, and deleting your data clears both.</p><div class="actions"><button class="quiet" id="export">Export JSON</button><button class="danger" id="delete">Delete my data</button></div><form method="dialog"><button class="quiet">Close</button></form></dialog>
+<footer><span>Next Chapter · Saved on this browser</span><button type="button" class="feedback-link" id="open-feedback">Something off?</button></footer>
+<dialog id="feedback" aria-labelledby="feedback-title">
+<h2 id="feedback-title">Something off?</h2>
+<p>Tell me what happened. A sentence or two is plenty. We’ll include the page you were on.</p>
+<form id="feedback-form">
+<label for="feedback-message">What happened?</label>
+<textarea id="feedback-message" required maxlength="1500" rows="4" autofocus></textarea>
+<p>Your email app will open a draft so you can review it before sending. You can also email <a href="mailto:sklovelace20@gmail.com">sklovelace20@gmail.com</a> directly.</p>
+<div class="actions"><button>Open email draft</button><button type="button" class="quiet" id="close-feedback">Close</button></div>
+</form>
+</dialog>
+<dialog id="data"><h2>Your data</h2><p>Your dashboard, Discover answers, and welcome starting point are stored in this browser profile. The vault uses a separate passphrase. The JSON export includes the encrypted vault, and excludes attached reports. Download reports from the test results panel. Deleting your data also removes those files.</p><div class="actions"><button class="quiet" id="export">Export JSON</button><button class="danger" id="delete">Delete my data</button></div><div id="delete-confirm" hidden><p>Permanently delete your entries, vault, and attached reports from this browser?</p><div class="actions"><button type="button" id="cancel-delete">Keep my data</button><button type="button" class="danger" id="confirm-delete">Yes, delete my data</button></div></div><p role="status" id="delete-status"></p><form method="dialog"><button class="quiet">Close</button></form></dialog>
 <dialog id="review"><h2>Check-in</h2><p id="reflection"></p><form id="review-form"><label>What happened?<textarea name="notes" required></textarea></label><label>Did you take your planned action?<select name="outcome" required><option value="">Choose an outcome</option><option>Completed</option><option>Partly completed</option><option>Skipped</option></select></label><label>What will you adjust next? <small>Optional</small><textarea name="adjustment"></textarea></label><label id="apply-label"><input type="checkbox" name="apply"> Use the adjustment as my next action</label><label>What evidence did you collect? <small>Optional</small><textarea name="evidence" aria-describedby="evidence-prompt"></textarea><small id="evidence-prompt"></small></label>
 <label id="skill-check">How would you rate your skill today? <small>Optional</small><select name="rating"><option value="">Choose a rating</option><option value="1">1 · Beginning</option><option value="2">2 · Learning</option><option value="3">3 · Practicing</option><option value="4">4 · Independent</option><option value="5">5 · Consistent</option></select></label>
 <div class="actions"><button type="button" class="quiet" id="close-review">Cancel</button><button>Save check-in</button></div></form></dialog>

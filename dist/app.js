@@ -1,4 +1,5 @@
-import { assessmentPanel, requestInsight } from './assessment.js';
+import { bucketBingo } from './bucket-bingo.js';
+import { clearReports, assessmentPanel, requestInsight } from './assessment.js';
 import { pageAt, viewRoutes } from './routes.js';
 import { library } from './library.js';
 import { accomplishments } from './accomplishments.js';
@@ -8,6 +9,8 @@ import { draftPlan, modes } from './planner.js';
 import { workspace, nextCheckIn, vaultKey } from './roadmap.js';
 import { deeperJourney, personalityEvidence } from './deeper.js';
 import { practiceFor, profileFields } from './growth.js';
+import { funPage } from './fun.js';
+import { welcomeFlow } from './welcome.js';
 import { discovery } from './discovery.js';
 
 const get = (id) => document.getElementById(id);
@@ -43,11 +46,12 @@ function save(next) {
 }
 
 function show(id, focus, path = viewRoutes[id] || '/') {
+  if (id === 'fun') refreshBucket();
   if (window.location.pathname + window.location.search !== path) window.history.pushState(null, '', path);
-  for (const page of ['home', 'setup', 'editor', 'journey', ...tools.viewIds]) get(page).hidden = page !== id;
-  get('workspace-nav').hidden = !tools.viewIds.includes(id);
+  for (const page of ['home', 'welcome', 'setup', 'editor', 'journey', 'fun', ...tools.viewIds]) get(page).hidden = page !== id;
+  get('workspace-nav').hidden = id !== 'fun' && !tools.viewIds.includes(id);
   for (const tab of get('workspace-nav').querySelectorAll('button')) {
-    tab.hidden = !state.plan && !['dashboard', 'discover', 'output', 'library', 'accomplishments'].includes(tab.dataset.view);
+    tab.hidden = !state.plan && !['dashboard', 'discover', 'output', 'roadmap', 'library', 'accomplishments', 'fun'].includes(tab.dataset.view);
     if (tab.dataset.view === 'dashboard') tab.textContent = state.plan ? 'Today' : 'Home';
   }
   for (const tab of get('workspace-nav').querySelectorAll('button')) {
@@ -55,7 +59,13 @@ function show(id, focus, path = viewRoutes[id] || '/') {
     else tab.removeAttribute('aria-current');
   }
   window.scrollTo(0, 0);
-  if (id === 'home') get('home-check-in').replaceChildren(deeper.today());
+  if (id !== 'welcome') welcome.reset();
+  if (id === 'home') {
+    welcome.home();
+    const checkIn = get('home-check-in');
+    checkIn.hidden = path !== '/?explore=1';
+    checkIn.replaceChildren(...(checkIn.hidden ? [] : [deeper.today()]));
+  }
   const title = get(id).querySelector('h1')?.textContent.trim();
   document.title = title && id !== 'home' ? `${title} · Next Chapter` : 'Next Chapter';
   if (focus) get(focus).focus();
@@ -173,7 +183,7 @@ const discover = discovery({ get, node, button, read: () => state, save, notify,
 const showAssessment = () => assessmentPanel({ read: () => state, save, node, button, notify });
 const startingPoint = journey({
   host: get('journey'), read: () => state, save, node, button, notify,
-  open: () => show('journey'), home: dashboard, assessment: showAssessment,
+  open: () => show('journey'), home: dashboard, planSettings: () => tools.planSettings(), assessment: showAssessment,
   tailorPractice: (target) => requestInsight({ mode: 'plan-tailoring',
     input: JSON.stringify({ target, acceptedAssessment: state.assessment?.summary }) }),
   finish(targets) {
@@ -191,8 +201,11 @@ const resourceLibrary = library({ host: get('library'), node, button });
 const achievements = accomplishments({ host: get('accomplishments'), read: () => state, save, node, button, notify });
 function openPage(path) {
   const { view, section, path: canonical } = pageAt(path);
+  if (view === 'fun') return show('fun', 'fun-title', canonical);
+  if (view === 'welcome') return welcome.render();
+  if (canonical === '/?explore=1') return show('home', 'explore-title', canonical);
   if (view === 'journey') return startingPoint.render();
-  if ((view === 'roadmap' || view === 'vault') && !state.plan) return dashboard();
+  if ((view === 'vault') && !state.plan) return dashboard();
   tools.go(view, { section, path: canonical });
 }
 
@@ -200,7 +213,7 @@ const output = planHub({ host: get('output'), read: () => state, save, node, but
   activities: () => planActivities({ read: () => state, node, save }),
   accomplishments: () => achievements.listing({ all: true }),
   openPage, openAccomplishments: () => tools.go('accomplishments'), openLibrary: () => tools.go('library'),
-  assessment: showAssessment, addPractice: (title, practice) => applyPractice(title, practice, 'practice', true) });
+  planSettings: () => tools.planSettings(), assessment: showAssessment, addPractice: (title, practice) => applyPractice(title, practice, 'practice', true) });
 const tools = workspace({ get, show, read: () => state, save, node, button, notify, dashboard, discover: (section) => section ? discover.open(section) : discover.render(), beginVisit: deeper.reset, output: output.render, library: resourceLibrary.render, accomplishments: achievements.render });
 
 function dashboard() {
@@ -263,6 +276,35 @@ const validate = (form, values, optional = []) => {
   return true;
 };
 
+const welcome = welcomeFlow({ get, node, button, read: () => state, save, show, openPage });
+funPage({ get, node });
+const refreshBucket = bucketBingo({ get, node, read: () => state, save });
+get('fun-nav').onclick = () => openPage('/fun');
+get('home-fun').onclick = () => openPage('/fun');
+const feedback = get('feedback');
+const feedbackMessage = get('feedback-message');
+let feedbackPage = '/';
+
+get('open-feedback').onclick = () => {
+  feedbackPage = pageAt(window.location.pathname + window.location.search).path;
+  feedback.showModal();
+};
+get('close-feedback').onclick = () => feedback.close();
+feedbackMessage.oninput = () => feedbackMessage.setCustomValidity('');
+get('feedback-form').onsubmit = (event) => {
+  event.preventDefault();
+  const message = feedbackMessage.value.trim();
+  if (!message) {
+    feedbackMessage.setCustomValidity('Tell us a little about what happened.');
+    feedbackMessage.reportValidity();
+    return;
+  }
+  const subject = encodeURIComponent('Next Chapter Pilot feedback');
+  const body = encodeURIComponent(`Page: ${feedbackPage}\r\n\r\n${message}`);
+  window.location.href = `mailto:sklovelace20@gmail.com?subject=${subject}&body=${body}`;
+};
+
+get('home-values').onclick = () => openPage('/values/exercise');
 get('home-library').onclick = () => tools.go('library');
 get('home-accomplishments').onclick = () => tools.go('accomplishments');
 get('discover-start').onclick = () => openPage('/personality');
@@ -289,7 +331,7 @@ get('plan').addEventListener('submit', (event) => {
   const targets = editingJourneyPlan ? state.journey.targets : state.planTargets;
   const planTargets = targets?.map((target, index) => index ? target : { ...target, goal: plan.goal, action: plan.action, proof: plan.tracker });
   const roadmap = editingJourneyPlan ? { ...state.roadmap, skill: planTargets?.[0]?.skill || '', evidence: plan.tracker, practice: plan.action } : state.roadmap;
-  const progress = editingJourneyPlan ? { completedActivities: {}, activityNotes: {} } : {};
+  const progress = editingJourneyPlan ? { completedActivities: {}, activityNotes: {}, projectTracker: null } : {};
   if (save({ ...state, ...progress, plan, planTargets, roadmap, started: editingJourneyPlan ? new Date().toISOString() : state.started || new Date().toISOString() })) {
     if (editingJourneyPlan) tools.go('output');
     else dashboard();
@@ -332,34 +374,49 @@ get('export').onclick = () => {
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
+const dataDialog = get('data');
+const deletePrompt = get('delete-confirm');
+const deleteButton = get('confirm-delete');
+const deleteStatus = get('delete-status');
+function resetDeletePrompt() {
+  deletePrompt.hidden = true;
+  get('delete').hidden = false;
+  deleteStatus.textContent = '';
+}
+dataDialog.addEventListener('close', resetDeletePrompt);
 get('delete').onclick = () => {
-  if (!window.confirm('Delete your dashboard and encrypted vault from this browser?')) return;
-  try {
-    tools.lock();
-    localStorage.removeItem(vaultKey);
-    localStorage.removeItem(key);
-  } catch {
-    notify('This browser could not delete your data.');
+  deletePrompt.hidden = false;
+  get('delete').hidden = true;
+  get('cancel-delete').focus();
+};
+get('cancel-delete').onclick = () => {
+  resetDeletePrompt();
+  get('delete').focus();
+};
+deleteButton.onclick = async () => {
+  deleteButton.disabled = true;
+  deleteStatus.textContent = 'Deleting saved data…';
+  tools.lock();
+  const failed = [];
+  for (const [storageKey, label] of [[key, 'dashboard entries'], [vaultKey, 'vault']]) {
+    try { localStorage.removeItem(storageKey); }
+    catch { failed.push(label); }
+  }
+  try { await clearReports(); }
+  catch { failed.push('attached reports'); }
+  deleteButton.disabled = false;
+  if (failed.length) {
+    if (!failed.includes('dashboard entries')) state = blank();
+    deleteStatus.textContent = 'Couldn’t finish deleting ' + failed.join(' and ') + '. Close other pilot tabs and try again.';
     return;
   }
-  state = blank();
-  deeper.reset();
-  get('dashboard').replaceChildren();
-  get('journey').replaceChildren();
-  get('output').replaceChildren();
-  get('accomplishments').replaceChildren();
-  get('discover').replaceChildren();
-  discover.open('profile');
-  get('plan').reset();
-  get('review-form').reset();
-  get('fields').replaceChildren();
-  get('reflection').textContent = '';
-  get('data').close();
-  show('home', 'home-title');
-  notify('Your data was deleted.');
+  location.replace('/?deleted=1');
 };
 
 const openCurrentPage = () => openPage(window.location.pathname + window.location.search);
 window.addEventListener('popstate', openCurrentPage);
+const justDeleted = location.search === '?deleted=1';
+if (justDeleted) history.replaceState(null, '', '/');
 openCurrentPage();
+if (justDeleted) notify('Your data was deleted from this browser.');
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});

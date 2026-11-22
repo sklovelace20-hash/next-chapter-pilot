@@ -1,6 +1,25 @@
 const allowed = ['application/pdf', 'image/png', 'image/jpeg', 'text/plain'];
 const extensions = { pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', txt: 'text/plain' };
 
+async function reportTransaction(mode, operation) {
+  const db = await new Promise((resolve, reject) => {
+    const open = indexedDB.open('next-chapter-assessment-files', 1);
+    open.onupgradeneeded = () => open.result.createObjectStore('reports', {keyPath:'id'});
+    open.onsuccess = () => resolve(open.result);
+    open.onerror = () => reject(open.error);
+  });
+  try {
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction('reports', mode);
+      const request = operation(tx.objectStore('reports'));
+      tx.oncomplete = () => resolve(request?.result);
+      tx.onabort = () => reject(tx.error || new Error('File storage unavailable.'));
+    });
+  } finally { db.close(); }
+}
+
+export const clearReports = () => reportTransaction('readwrite', store => store.clear());
+
 function readAsData(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -22,10 +41,11 @@ export async function requestInsight(payload) {
 export function assessmentPanel({ read, save, node, button, notify }) {
   const box = node('details', '', 'follow-up assessment-panel');
   box.append(node('summary', 'Add personality test results'),
-    node('p', 'Upload a PDF, PNG, JPEG, or text file up to 2 MB, or paste the relevant results. Generate AI summary sends the selected report text or file to OpenAI. The app saves only the summary you accept. Leave out identifying details you don’t want to share.'));
+    node('p', 'Choose one or more reports, then press Submit to save them in this browser. For an optional AI summary, select one saved report (up to 2 MB) or paste text. Generating a summary sends that input to OpenAI.'));
   const fileLabel = node('label', 'Test results file');
   const upload = document.createElement('input');
   upload.type = 'file';
+  upload.multiple = true;
   upload.accept = '.pdf,.png,.jpg,.jpeg,.txt';
   fileLabel.append(upload);
   const textLabel = node('label', 'Paste results');
@@ -39,6 +59,47 @@ export function assessmentPanel({ read, save, node, button, notify }) {
   savedLabel.append(summary);
   const status = node('p', '', 'inline-status');
   status.setAttribute('role', 'status');
+  const savedFiles = node('ul');
+  const picker = node('select');
+  const pickerLabel = node('label', 'Report for AI summary');
+  pickerLabel.append(picker);
+  let reports = [];
+  async function refresh() {
+    reports = await reportTransaction('readonly', store => store.getAll());
+    const previous = picker.value;
+    picker.replaceChildren(new Option('Select a saved report', ''));
+    savedFiles.replaceChildren();
+    for (const {id, file} of reports) {
+      picker.add(new Option(file.name, id));
+      const row = node('li');
+      row.append(button(file.name, () => {
+        const url = URL.createObjectURL(file);
+        const link = node('a'); link.href = url; link.download = file.name; link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+      }, 'quiet'));
+      savedFiles.append(row);
+    }
+    picker.value = previous;
+    pickerLabel.hidden = !reports.length;
+  }
+  const submit = button('Submit test results', async () => {
+    const files = Array.from(upload.files);
+    if (!files.length) { status.textContent = 'Choose at least one file first.'; return; }
+    if (files.some(file => !file.size || !allowed.includes(file.type || extensions[file.name.split('.').pop().toLowerCase()]))) {
+      status.textContent = 'Choose nonempty PDF, PNG, JPEG, or text files.'; return;
+    }
+    submit.disabled = upload.disabled = true;
+    try {
+      await reportTransaction('readwrite', store => {
+        for (const file of files) store.put({id: JSON.stringify([file.name,file.size,file.lastModified]), file});
+      });
+      upload.value = '';
+      await refresh();
+      status.textContent = files.length === 1 ? '1 report saved in this browser.' : files.length + ' reports saved in this browser.';
+    } catch { status.textContent = 'Could not confirm the save. Check browser storage and try again.'; }
+    finally { submit.disabled = upload.disabled = false; }
+  });
+  refresh().catch(() => { status.textContent = 'Saved reports could not be loaded. Check browser storage.'; });
   const draft = node('div', '');
   let latestDraft;
   function confirm(value) {
@@ -56,7 +117,8 @@ export function assessmentPanel({ read, save, node, button, notify }) {
   }
   const generate = button('Generate AI summary', async () => {
     const typed = pasted.value.trim();
-    const file = upload.files?.[0];
+    if (upload.files.length > 1) { status.textContent = 'Submit your reports first, then select one to summarize.'; return; }
+    const file = upload.files[0] || reports.find(report => report.id === picker.value)?.file;
     if (!typed && !file) { status.textContent = 'Choose a file or paste your results.'; return; }
     if (typed && file) { status.textContent = 'Use either the file or the pasted results.'; return; }
     generate.disabled = true;
@@ -98,6 +160,6 @@ export function assessmentPanel({ read, save, node, button, notify }) {
   }, 'quiet');
   remove.hidden = !read().assessment;
   const accept = button('Accept summary', () => { confirm(summary.value); remove.hidden = !read().assessment; });
-  box.append(fileLabel, textLabel, generate, status, draft, savedLabel, accept, remove);
+  box.append(fileLabel, submit, status, savedFiles, pickerLabel, textLabel, generate, draft, savedLabel, accept, remove);
   return box;
 }

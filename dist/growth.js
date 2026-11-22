@@ -66,6 +66,7 @@ export function mirrorSources(state) {
   const responses = ['reflection', 'career'].flatMap((section) => Object.entries(d[section] || {}).flatMap(([key, entry]) =>
     source(prompts[key] || key, entry.answer).concat(source('Follow-up answer', entry.follow), source('Further clarification', entry.clarify))));
   return [
+    ['My insights', (state.personalInsights || []).map((value, i) => ['Insight ' + (i + 1), value])],
     ['Plan and priorities', [
       ...record('Setup answer', state.answers), ...record('Plan', state.plan),
       ...Object.entries(state.deeper?.weeks || {}).flatMap(([week, value]) => source(`${priorityQuestion} · ${week}`, value)),

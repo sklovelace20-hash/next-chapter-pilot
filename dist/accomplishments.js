@@ -27,7 +27,7 @@ export function accomplishments({ host, read, save, node, button, notify }) {
     const list = node('div', '');
     const groupList = all ? [...groups] : [[activeYear, groups.get(activeYear) || []]];
     if (!groupList.length || !groupList.some(([, entries]) => entries.length)) {
-      list.append(node('p', 'No accomplishments recorded yet.'));
+      list.append(node('p', 'Your first win can be small. What made you smile this year?'));
       return list;
     }
     for (const [year, entries] of groupList) {
@@ -59,11 +59,12 @@ export function accomplishments({ host, read, save, node, button, notify }) {
     const entries = state.accomplishments || [];
     const entry = entries.find((item) => item.id === editing);
     const intro = node('div', '', 'section-intro topic-intro topic-goals');
-    const title = node('h1', 'Accomplishments');
+    const title = node('h1', 'Things I’m proud of');
     title.tabIndex = -1;
-    intro.append(title, node('p', 'Record things you’re proud of, including small wins, skills you used, and challenges you got through.'));
+    intro.append(title, node('p', 'Welcome to your smile file. Hit a goal? Finished that thing you kept putting off? Got a compliment you’re still riding high on? It all goes here.'),
+      node('p', 'Save the places you’ve been, the things you’ve tried, and the moments you want to remember. On the days it’s hard to recall a single win, come back here for a reminder of how freaking awesome you are.'));
     const card = node('article', '', 'accomplishment-card');
-    card.append(node('h2', entry ? 'Edit an accomplishment' : 'Add an accomplishment'));
+    card.append(node('h2', entry ? 'Edit Smile File entry' : 'What’s going in your smile file?'));
     const form = node('form', '');
     const field = (label, input) => {
       const wrapper = node('label', label);
@@ -71,7 +72,7 @@ export function accomplishments({ host, read, save, node, button, notify }) {
       form.append(wrapper);
       return input;
     };
-    const name = field('What did you accomplish?', Object.assign(document.createElement('input'), {
+    const name = field('What do you want to remember?', Object.assign(document.createElement('input'), {
       name: 'title', required: true, maxLength: 160, value: entry?.title || ''
     }));
     const date = field('When did it happen?', Object.assign(document.createElement('input'), {
@@ -79,7 +80,7 @@ export function accomplishments({ host, read, save, node, button, notify }) {
     }));
     const note = field('Why does it matter to you? Optional', Object.assign(document.createElement('textarea'), { value: entry?.note || '', maxLength: 1800 }));
     const actions = node('div', '', 'actions');
-    actions.append(node('button', entry ? 'Save changes' : 'Add to my year'));
+    actions.append(node('button', entry ? 'Save changes' : 'Save to my smile file'));
     if (entry) {
       const cancel = button('Cancel', () => { editing = undefined; render(); }, 'quiet');
       cancel.type = 'button';
@@ -98,7 +99,7 @@ export function accomplishments({ host, read, save, node, button, notify }) {
         activeYear = yearOf(saved.date);
         render();
         host.querySelector('h2').focus();
-        notify('Accomplishment saved.');
+        notify('That one counts. It’s in your smile file!');
       }
     };
     card.querySelector('h2').tabIndex = -1;
@@ -116,7 +117,7 @@ export function accomplishments({ host, read, save, node, button, notify }) {
       host.querySelector('select').focus();
     };
     label.append(select);
-    review.append(label, listing(), node('p', 'Your recorded accomplishments also appear in the Plan hub.'));
+    review.append(label, listing(), node('p', 'In the Plan hub, you can choose which wins to include in your AI summary and follow-up questions.'));
     host.replaceChildren(intro, card, review);
   }
   return { render, listing };

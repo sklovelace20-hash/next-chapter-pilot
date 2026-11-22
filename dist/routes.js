@@ -10,12 +10,14 @@ export const topicRoutes = {
 };
 
 export const viewRoutes = {
+  welcome: '/welcome',
+  fun: '/fun',
   journey: '/start',
   discover: '/discover',
   roadmap: '/roadmap',
   output: '/plan',
   library: '/library',
-  accomplishments: '/accomplishments',
+  accomplishments: '/smile-file',
   vault: '/vault'
 };
 
@@ -27,6 +29,9 @@ export const pagePaths = [
 export function pageAt(path) {
   const [pathname, query] = path.split('?');
   const clean = pathname.replace(/\/$/, '') || '/';
+  if (clean === '/' && new URLSearchParams(query).get('explore') === '1') {
+    return { view: 'dashboard', path: '/?explore=1' };
+  }
   if (clean === viewRoutes.discover) {
     const requested = new URLSearchParams(query).get('topic');
     if (requested === 'profile' || requested === 'reflection') {

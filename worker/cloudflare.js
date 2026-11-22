@@ -10,6 +10,10 @@ export default {
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
     }
+    if (url.pathname.replace(/\/$/, '') === '/accomplishments') {
+      url.pathname = '/smile-file';
+      return Response.redirect(url, 301);
+    }
     if (url.pathname === '/middle-theory-growth-library.html') {
       return Response.redirect(new URL('/library', url), 302);
     }

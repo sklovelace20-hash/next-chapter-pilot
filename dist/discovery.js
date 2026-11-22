@@ -73,11 +73,17 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
       const { key, question: [question, left, right] } = all[position];
       const card = panel(question, `Personality · Question ${position + 1} of ${all.length}`);
       card.append(node('p', 'Choose what feels natural in most situations. This short exercise explores preferences inspired by Myers-Briggs.'));
-      for (const [answer, label] of [[1, left], [-1, right], [0, 'It depends']]) {
-        card.append(button(label, () => {
+      const choices = node('div', '', 'preference-choices');
+      for (const [answer, label, mark] of [[1, left, '◒'], [-1, right, '◓'], [0, 'It depends', '≈']]) {
+        const choice = button('', () => {
           if (write({ traits: { ...answers, [key]: String(answer) } })) open('profile');
-        }, 'quiet answer'));
+        }, 'hub-link preference-choice');
+        const icon = node('span', mark, 'preference-icon');
+        icon.setAttribute('aria-hidden', 'true');
+        choice.append(icon, node('span', label, 'hub-label'));
+        choices.append(choice);
       }
+      card.append(choices);
       if (position > 0) card.append(button('Previous question', () => {
         const next = { ...answers };
         delete next[all[position - 1].key];
@@ -391,8 +397,16 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
       body.append(card);
     }
 
-    if (confirmed.direction === 'career') {
-      const career = Object.fromEntries(Object.entries(info.career || {}).map(([key, entry]) => [key, [entry.answer, entry.follow, entry.clarify].filter(Boolean).join(' ')]));
+    if (confirmed.direction === 'career') body.append(careerResources());
+  }
+
+  function careerResources() {
+    const state = read();
+    const info = data();
+    const confirmed = state.growth?.confirmed || {};
+    const resources = everydayTools({ guide: 'work', node, button });
+    resources.querySelector('summary').textContent = 'Resources and Insights';
+    const career = Object.fromEntries(Object.entries(info.career || {}).map(([key, entry]) => [key, [entry.answer, entry.follow, entry.clarify].filter(Boolean).join(' ')]));
       const roles = careerIdeas(career, [confirmed.strength, confirmed.tryNext, confirmed.skill].filter(Boolean));
       const card = panel('Career paths to test', 'Compare each experiment with the work you enjoy and the conditions you want.');
       if (info.careerFirst) card.append(node('p', 'What you said comes first'), node('blockquote', info.careerFirst, 'entry'));
@@ -403,17 +417,14 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
         if (state.plan) card.append(button('Add this career experiment', () => applyPractice(role.title, role.practice, 'experience'), 'quiet'));
       }
       if (!roles.length) card.append(node('p', 'Which activity would you like to do more often? Add it under Career or “What I want to try.”'));
-      body.append(card);
-    }
+    resources.querySelector('summary').after(card);
+    return resources;
   }
 
   function render() {
     const collection = get('discover');
     const header = node('div', '', `section-intro topic-intro topic-${current}`);
-    const symbols = { profile: '◈', values: '◆', reflection: '◐', morning: '☀', career: '✦', insights: '✧' };
-    const graphic = node('span', symbols[current], 'topic-graphic');
-    graphic.setAttribute('aria-hidden', 'true');
-    header.append(graphic);
+    const symbols = { profile: 'fingerprint', values: 'diamond', reflection: 'menu_book', morning: '☀', career: 'flag', insights: 'insights' };
     const heading = node('h1', 'Discover what drives you');
     heading.tabIndex = -1;
     header.append(heading, node('p', 'Start with personality or choose one area to explore. Come back whenever you’re ready.'));
@@ -422,13 +433,17 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     const menu = node('nav', '', 'discover-menu');
     menu.setAttribute('aria-label', 'Discovery topics');
     for (const [key, title] of sections) {
-      const control = button(title, () => {
+      const control = button('', () => {
         if (key !== 'reflection' && key !== 'career') return open(key);
         const questions = key === 'reflection' ? reflections : careerQuestions;
         const saved = data()[key] || {};
         const next = questions.findIndex(([id]) => !saved[id]);
         open(key, next < 0 ? (key === 'career' ? questions.length : 0) : next);
-      }, 'quiet');
+      }, 'hub-link discovery-tile topic-' + key);
+      const icon = node('span', symbols[key], 'hub-symbol');
+      if (key === 'morning') icon.style.fontFamily = 'system-ui';
+      icon.setAttribute('aria-hidden', 'true');
+      control.append(icon, node('span', title, 'hub-label'));
       control.setAttribute('aria-pressed', String(key === current));
       menu.append(control);
     }
@@ -440,7 +455,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     if (current === 'morning') morning(body);
     if (current === 'career') {
       career(body);
-      body.append(everydayTools({ guide: 'work', node, button }));
+      body.append(careerResources());
     }
     if (current === 'insights') insights(body);
     for (const title of body.querySelectorAll('h2')) title.tabIndex = -1;

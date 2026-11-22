@@ -1,3 +1,4 @@
+import { viewRoutes } from './routes.js';
 import { profileFields } from './growth.js';
 import { planQuestions, personalityEvidence } from './deeper.js';
 import { seal, unseal } from './vault-crypto.js';
@@ -14,7 +15,6 @@ export function nextCheckIn(state) {
 }
 
 export function workspace({ get, show, read, save, node, button, notify, dashboard, discover, beginVisit, output, library, accomplishments }) {
-  let layout = 'timeline';
   let passphrase = '';
   let notes = [];
   let vaultOperation = 0;
@@ -90,50 +90,68 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
     const state = read();
     const road = state.roadmap || {};
     const container = get('roadmap');
-    const intro = page(container, 'YOUR ROADMAP', 'Build toward your goal', state.plan.goal);
-    const controls = node('div', '', 'actions');
-    for (const [value, label] of [['timeline', 'Timeline'], ['summary', 'Summary']]) {
-      const control = button(label, () => { layout = value; renderRoadmap(); get('roadmap').querySelector('[aria-pressed=true]').focus(); }, 'quiet');
-      control.setAttribute('aria-pressed', String(value === layout));
-      controls.append(control);
+    const guide = node('section', '', 'route-guide');
+    const heading = node('h1', state.plan?.goal || 'Your roadmap');
+    heading.tabIndex = -1;
+    const banner = node('div', '', 'roadmap-banner');
+    const map = node('img', '', 'roadmap-map');
+    map.alt = '';
+    map.src = '/roadmap-route.svg';
+    banner.append(node('p', '90-day destination', 'eyebrow'), heading, map);
+    guide.append(banner);
+    const link = node('a', 'Open Plan Hub', 'topic-page-link');
+    link.href = viewRoutes.output;
+    const footer = node('div', '', 'roadmap-actions');
+    const calendar = node('img', '', 'roadmap-calendar');
+    calendar.alt = '';
+    calendar.src = '/roadmap-calendar.svg';
+    footer.append(link, calendar);
+    if (!state.plan) {
+      guide.append(node('p', 'Choose a goal in Plan Hub to see your path here.'), footer);
+      container.replaceChildren(guide);
+      return;
     }
-    intro.append(controls);
-    const completed = state.reviews.filter((review) => review.outcome === 'Completed').length;
-    const latestEvidence = [...state.reviews].reverse().find((review) => review.evidence)?.evidence;
-    if (layout === 'summary') {
-      const summary = card('Progress so far', `${completed} completed actions across ${state.reviews.length} check-ins.`);
-      summary.append(node('p', latestEvidence ? `Latest evidence: ${latestEvidence}` : 'Add evidence at your next check-in to see what is changing.'));
-      if (road.baseline && road.target) summary.append(node('p', `Self-assessment: ${road.baseline}/5 today, aiming for ${road.target}/5.`));
-      const latestRating = [...state.reviews].reverse().find((review) => review.rating)?.rating;
-      if (latestRating) summary.append(node('p', `Latest self-assessment: ${latestRating}/5.`));
-      for (const [key, question, follow] of planQuestions) {
-        if (!road[key] && !road[`${key}Follow`]) continue;
-        const detail = node('details', '', 'follow-up');
-        detail.append(node('summary', question));
-        if (road[key]) detail.append(node('blockquote', road[key], 'entry'));
-        if (road[`${key}Follow`]) detail.append(node('p', follow), node('blockquote', road[`${key}Follow`], 'entry'));
-        summary.append(detail);
-      }
-      if (road.gap) summary.append(node('p', `Gap to investigate: ${road.gap}`));
-      container.append(summary);
+    const tracker = state.projectTracker;
+    const steps = tracker?.steps || [];
+    const active = steps.findIndex(step => !step.done);
+    const current = steps[active];
+    const focus = [tracker?.focus || road.skill, tracker?.second].filter(Boolean).join(' · ');
+    if (focus) guide.append(node('p', focus));
+    const next = node('section', '', 'route-next');
+    next.append(node('h2', steps.length && !current ? 'Plan complete' : 'Your next move'),
+      node('p', current?.today || (steps.length ? 'You’ve completed every milestone in this plan.' : state.plan.action)));
+    guide.append(next);
+    if (road.practice && road.practice !== current?.today && road.practice !== state.plan.action)
+      guide.append(node('p', 'Current practice · ' + road.practice));
+    if (steps.length) {
+      const count = steps.filter(step => step.done).length;
+      const progress = node('progress');
+      progress.max = steps.length;
+      progress.value = count;
+      progress.setAttribute('aria-label', 'Milestone progress');
+      guide.append(node('p', count + ' of ' + steps.length + ' milestones complete'), progress);
+      const path = node('ol', '', 'route-path');
+      steps.forEach((step, index) => {
+        const item = node('li');
+        const status = step.done ? 'Complete' : index === active ? 'Current' : 'Ahead';
+        item.className = step.done ? 'finished' : index === active ? 'current' : '';
+        if (index === active) item.setAttribute('aria-current','step');
+        item.append(node('small', 'Days ' + step.days.join('–') + ' · ' + status),
+          node('h3', step.title), node('p', step.action));
+        path.append(item);
+      });
+      guide.append(path);
     } else {
-      const timeline = node('div', '', 'roadmap-timeline');
-      const stages = [
-        ['Days 1–14', 'Investigate', road.gap || 'Name the gap between your current experience and the goal.', road.skill && `Skill: ${road.skill}`],
-        ['Days 15–45', 'Build skill', road.practice || state.plan.action, road.evidence && `Evidence to look for: ${road.evidence}`],
-        ['Days 46–90', 'Gain experience', road.experience || 'Apply the skill in a real situation and collect feedback.', road.target && `Target self-assessment: ${road.target}/5`]
-      ];
-      for (const [period, title, body, detail] of stages) {
-        const item = card(title, body);
-        const marker = node('div', '', 'roadmap-marker');
-        marker.setAttribute('aria-hidden', 'true');
-        item.prepend(marker, node('p', period, 'eyebrow'));
-        if (detail) item.append(node('p', detail));
-        timeline.append(item);
-      }
-      container.append(timeline);
+      guide.append(node('p', 'Build your timeline in Plan Hub to see each milestone here.'));
     }
+    guide.append(footer);
+    container.replaceChildren(guide);
+  }
 
+  function planSettings() {
+    const state = read();
+    const road = state.roadmap || {};
+    const container = node('section', '', 'hub-panel');
     if (state.growth?.confirmed) {
       const confirmed = node('details', '', 'settings-panel');
       confirmed.append(node('summary', 'What you confirmed in Discover'));
@@ -188,20 +206,19 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
     };
     cadence.onchange = updateCustom;
     updateCustom();
-    form.append(node('p', 'Start weekly. Try every 3 days during an intensive practice period, or every 2 weeks when feedback takes longer.'), node('button', 'Save roadmap'));
+    form.append(node('p', 'Start weekly. Try every 3 days during an intensive practice period, or every 2 weeks when feedback takes longer.'), node('button', 'Save plan settings'));
     form.onsubmit = (event) => {
       event.preventDefault();
       const values = Object.fromEntries([...new FormData(form)].map(([key, value]) => [key, value.trim()]));
       values.cadence = Number(values.cadence || 7) || Number(values.custom);
       delete values.custom;
       if (save({ ...read(), roadmap: values })) {
-        renderRoadmap();
-        get('roadmap').querySelector('summary').focus();
-        notify('Roadmap saved.');
+        notify('Plan settings saved.');
       }
     };
     details.append(form);
     container.append(details);
+    return container;
   }
 
   function renderVault() {
@@ -372,5 +389,5 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
   window.addEventListener('pageshow', (event) => {
     if (event.persisted && !get('vault').hidden) renderVault();
   });
-  return { openShare, lock, viewIds, go };
+  return { openShare, lock, viewIds, go, planSettings };
 }

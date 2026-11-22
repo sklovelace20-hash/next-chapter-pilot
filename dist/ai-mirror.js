@@ -39,7 +39,7 @@ export function aiMirror({ sources, node, button, accept, edit }) {
       profile.append(node('summary', 'See the proposed profile wording'));
       for (const [key, value] of Object.entries(draft.profile)) if (value.trim()) profile.append(node('p', key), node('blockquote', value, 'entry'));
       const actions = node('div', '', 'actions');
-      actions.append(button('Accept as written', () => accept(draft)), button('Edit before accepting', () => edit(draft), 'quiet'));
+      actions.append(button('Accept as written', () => accept(draft)), button('Edit before accepting', () => edit(draft), 'quiet'), button('Skip suggestion', () => { result.replaceChildren(); chooser.open = true; generate.focus(); }, 'quiet'));
       result.append(profile, node('p', 'Does this fit? Accept it as written or change the wording before it becomes part of your profile.'), actions);
       result.querySelector('h3').tabIndex = -1;
       result.querySelector('h3').focus();

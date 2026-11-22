@@ -3,7 +3,7 @@ export const everydayGuides = {
   living: [
     {
       title: "Alcoholics Anonymous resource directory",
-      intro: [[{"text": "What the evidence supports.", "strong": true}, " A 2020 Cochrane review found that manualized AA/Twelve-Step Facilitation approaches improved continuous abstinence compared with some established treatments, including cognitive behavioral therapy, while many other drinking outcomes were similar. The review studied people with alcohol use disorder. The everyday exercises below are practical adaptations and have not been tested as a 12-step package for the general population. ", {"text": "Cochrane review", "url": "https://pubmed.ncbi.nlm.nih.gov/32159228/"}], [{"text": "When medical support matters.", "strong": true}, " Alcohol withdrawal can be dangerous. If you drink heavily or regularly and are considering stopping, get medical guidance about withdrawal before stopping suddenly. ", {"text": "NIAAA clinical overview", "url": "https://www.niaaa.nih.gov/health-professionals-communities/core-resource-on-alcohol/alcohol-use-disorder-risk-diagnosis-recovery"}]],
+      intro: [[{"text": "When medical support matters.", "strong": true}, " Alcohol withdrawal can be dangerous. If you drink heavily or regularly and are considering stopping, get medical guidance about withdrawal before stopping suddenly. ", {"text": "NIAAA clinical overview", "url": "https://www.niaaa.nih.gov/health-professionals-communities/core-resource-on-alcohol/alcohol-use-disorder-risk-diagnosis-recovery"}]],
       items: [
         {"body": [[{"text": "Start here", "strong": true}, " ", {"text": "What is A.A.?", "url": "https://www.aa.org/what-is-aa"}, " and ", {"text": "Is A.A. for You?", "url": "https://www.aa.org/self-assessment"}], [{"text": "How to use it", "strong": true}, " Read the overview and use the questions as conversation starters."]], "title": "Understand AA"},
         {"body": [[{"text": "Start here", "strong": true}, " ", {"text": "Find A.A. Near You", "url": "https://www.aa.org/find-aa"}, " and ", {"text": "Meeting Guide app", "url": "https://www.aa.org/meeting-guide-app"}], [{"text": "How to use it", "strong": true}, " Filter by location, format, and meeting type. Check the listing before you go."]], "title": "Find a local meeting"},
@@ -87,6 +87,7 @@ export const everydayGuides = {
     },
   ],
   work: [
+    {"title": "Career paths to explore", "intro": [], "items": [{"title": "25 fulfilling jobs to explore", "body": [["What makes a good day at work for you? These picks span service, creativity, problem-solving, and hands-on work. Use the descriptions to find your own shortlist."], [{"text": "Occupational therapist.", "strong": true}, " Help someone regain the everyday routines that matter to them."], [{"text": "Adult literacy teacher.", "strong": true}, " Help an adult read a lease, write a letter, or pursue a diploma."], [{"text": "Librarian.", "strong": true}, " Connect curious people with the information they came looking for."], [{"text": "Community health worker.", "strong": true}, " Help neighbors find and use local health services."], [{"text": "School counselor.", "strong": true}, " Help students imagine and plan their next steps."], [{"text": "Rehabilitation counselor.", "strong": true}, " Work alongside people with disabilities on goals they choose."], [{"text": "Speech-language pathologist.", "strong": true}, " Help someone communicate a thought they’ve struggled to share."], [{"text": "Physical therapist assistant.", "strong": true}, " Support a patient as movement becomes easier."], [{"text": "Social worker.", "strong": true}, " Help people find support through difficult transitions."], [{"text": "Registered nurse.", "strong": true}, " Combine close observation with hands-on care."], [{"text": "Environmental scientist.", "strong": true}, " Investigate problems affecting land, air, and water."], [{"text": "Conservation scientist.", "strong": true}, " Help communities care for forests and other natural resources."], [{"text": "Landscape architect.", "strong": true}, " Design outdoor places people can enjoy for years."], [{"text": "Urban planner.", "strong": true}, " Shape how neighborhoods grow and how people move through them."], [{"text": "Civil engineer.", "strong": true}, " Turn ideas for safer roads, bridges, and water systems into designs."], [{"text": "Electrician.", "strong": true}, " Solve practical problems and see the lights come on."], [{"text": "Carpenter.", "strong": true}, " Build something people can use every day."], [{"text": "Bicycle mechanic.", "strong": true}, " Get someone’s favorite ride back on the road."], [{"text": "Chef.", "strong": true}, " Turn ingredients and timing into a meal people share."], [{"text": "Museum curator.", "strong": true}, " Give objects and stories a public home."], [{"text": "Film and video editor.", "strong": true}, " Find the story in a roomful of footage."], [{"text": "Graphic designer.", "strong": true}, " Make an idea easier to see and understand."], [{"text": "Training and development specialist.", "strong": true}, " Watch someone gain confidence in a new skill."], [{"text": "Recreation worker.", "strong": true}, " Create chances for people to play and connect."], [{"text": "Interpreter or translator.", "strong": true}, " Help people understand one another across languages."], [{"text": "Compare duties, training, and pay in the Occupational Outlook Handbook", "url": "https://www.bls.gov/ooh/"}]]}, {"title": "25 jobs for starting over", "body": [["Start with a skill you already use. Each pick includes a small way to test the fit before committing to training. Check local postings for pay, credentials, and schedules."], [{"text": "Project coordinator.", "strong": true}, " Use your organizing skills to map a small project with dates and owners."], [{"text": "Training coordinator.", "strong": true}, " Turn something you know well into a ten-minute lesson."], [{"text": "Customer success specialist.", "strong": true}, " Use relationship skills to sketch a new customer’s first month."], [{"text": "Technical writer.", "strong": true}, " Rewrite one confusing set of instructions and have someone try it."], [{"text": "Bookkeeping clerk.", "strong": true}, " Try reconciling a sample ledger and see how the detail work feels."], [{"text": "IT support specialist.", "strong": true}, " Walk a friend through a tech problem and write up the fix."], [{"text": "Software quality assurance tester.", "strong": true}, " Test a demo app and write a clear issue report."], [{"text": "Data analyst.", "strong": true}, " Use a spreadsheet to answer one question from a public dataset."], [{"text": "Purchasing assistant.", "strong": true}, " Compare three suppliers on price, timing, and reliability."], [{"text": "Logistics coordinator.", "strong": true}, " Plan a delivery with a deadline and a backup option."], [{"text": "Insurance claims representative.", "strong": true}, " Ask a local employer about licensing and trainee openings."], [{"text": "Medical records specialist.", "strong": true}, " Explore an introductory records course before choosing a credential."], [{"text": "Patient services coordinator.", "strong": true}, " Ask a clinic what a typical scheduling shift looks like."], [{"text": "Dental assistant.", "strong": true}, " Compare training requirements in your state with local job listings."], [{"text": "Pharmacy technician.", "strong": true}, " Ask a pharmacy about trainee roles and registration requirements."], [{"text": "Human resources coordinator.", "strong": true}, " Try drafting a first-day checklist for a new employee."], [{"text": "Recruiting coordinator.", "strong": true}, " Map an interview schedule that works for several busy people."], [{"text": "Fundraising coordinator.", "strong": true}, " Draft a one-page appeal for a cause you care about."], [{"text": "Event coordinator.", "strong": true}, " Run the schedule for one small gathering."], [{"text": "Community outreach coordinator.", "strong": true}, " Plan how you’d reach ten people about a local event."], [{"text": "Property management assistant.", "strong": true}, " Shadow someone handling tenant requests and vendor calls."], [{"text": "Apprentice electrician.", "strong": true}, " Attend an apprenticeship information session and ask about paid training."], [{"text": "HVAC service technician.", "strong": true}, " Ask a technician about troubleshooting, travel, and on-call hours."], [{"text": "Library assistant.", "strong": true}, " Explore a public-facing shift and ask how much time goes to patrons versus shelving."], [{"text": "Communications specialist.", "strong": true}, " Turn a complicated announcement into a short, clear public update."], [{"text": "Explore the kinds of work you enjoy with the O*NET Interest Profiler", "url": "https://onetinterestprofiler.org/"}]]}, {"title": "Becoming an entrepreneur", "body": [["Pick one idea. Give yourself a small, affordable way to learn whether someone wants it."], [{"text": "Name the customer.", "strong": true}, " Write one sentence naming who you help, what’s frustrating them, and what they want instead."], [{"text": "Talk to five people.", "strong": true}, " Ask when they last had the problem, how they handled it, and what it cost them."], [{"text": "Study the alternatives.", "strong": true}, " Include doing nothing. What would make switching worth the effort?"], [{"text": "Test a small offer.", "strong": true}, " Describe one deliverable, one price, and one deadline. Ask a potential customer for a paid pilot."], [{"text": "Work out the numbers.", "strong": true}, " List setup costs, monthly bills, and the cost of each sale. Include your time."], [{"text": "Check your runway.", "strong": true}, " Map when money comes in and bills come due. Set a spending limit for the test."], [{"text": "Check the setup requirements.", "strong": true}, " Use local and state resources to check registration, permits, taxes, and insurance for your activity."], [{"text": "Put the agreement in writing.", "strong": true}, " Spell out scope, timing, payment, and what happens if the request changes."], [{"text": "Find your first sales channel.", "strong": true}, " Try one place your customers already spend time. Track conversations, offers, and sales."], [{"text": "Decide what comes next.", "strong": true}, " Pick a review date and define what would make you continue, adjust the offer, or stop."], [{"text": "Explore planning tools from the U.S. Small Business Administration", "url": "https://www.sba.gov/counseling/plan-your-business/"}]]}]},
     {
       title: "Top U.S. occupations and the skills they use",
       intro: [["“Top” here means the ", {"text": "five fastest by percentage growth", "strong": true}, " and ", {"text": "five with the largest projected net job gains", "strong": true}, " in the U.S. Bureau of Labor Statistics 2025–35 projections. These are national projections. Net gains count additional jobs and exclude replacement openings. The skills are practical development priorities, based on typical duties and occupational profiles. Explore local wages, education, licensing and work conditions before choosing a path. ", {"text": "BLS fastest growing", "url": "https://www.bls.gov/emp/tables/fastest-growing-occupations.htm"}, " · ", {"text": "BLS most jobs added", "url": "https://www.bls.gov/emp/tables/occupations-most-job-growth.htm"}], [{"text": "More paths worth comparing.", "strong": true}, " These examples include roles with significant national growth and roles related to your sales leadership, coaching, and mental health interests."]],
@@ -176,12 +177,366 @@ export const everydayGuides = {
         {"body": [["Run a 15-minute discussion with an agenda and close with decisions and owners."]], "title": "46. Facilitation"},
         {"body": [["Agree on responsibilities and a shared deliverable before starting a task with someone."]], "title": "47. Collaboration"},
         {"body": [["Ask someone about the last time they faced a problem. Document their actions and constraints."]], "title": "48. Customer discovery"},
-        {"body": [["Draft one accomplishment using situation, action, result, and what you learned."]], "title": "49. Career storytelling"},
+        {"body": [["Tell the story of a win. Describe the situation, what you did, the result, and what you learned."]], "title": "49. Career storytelling"},
         {"body": [["Reconnect with a former colleague to learn what they’re working on and offer a relevant resource."]], "title": "50. Professional relationship building"},
       ]
     },
   ],
   classes: [
+{
+  "title": "Finance & economics",
+  "intro": [],
+  "items": [
+    {
+      "title": "Financial Markets",
+      "body": [
+        [
+          "Free lecture archive from 2011. Explore how banks, insurance and markets handle risk."
+        ],
+        [
+          {
+            "text": "Dig deeper. ",
+            "strong": true
+          },
+          "Which risk does insurance spread across a group?"
+        ],
+        [
+          {
+            "text": "Yale · Open course",
+            "url": "https://oyc.yale.edu/economics/econ-252"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Principles of Microeconomics",
+      "body": [
+        [
+          "Free OpenCourseWare materials. Start with how prices shape choices, then try a practice problem."
+        ],
+        [
+          {
+            "text": "Dig deeper. ",
+            "strong": true
+          },
+          "Which everyday purchase would you change first if its price doubled?"
+        ],
+        [
+          {
+            "text": "MIT · Open course",
+            "url": "https://ocw.mit.edu/courses/14-01sc-principles-of-microeconomics-fall-2011/"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Public Finance and Public Policy",
+      "body": [
+        [
+          "Free OpenCourseWare materials. An intermediate next step after introductory microeconomics, covering public goods, taxes, and spending."
+        ],
+        [
+          {
+            "text": "Dig deeper. ",
+            "strong": true
+          },
+          "Choose a local public service. Who pays for it, and who benefits?"
+        ],
+        [
+          {
+            "text": "MIT · Open course",
+            "url": "https://ocw.mit.edu/courses/14-41-public-finance-and-public-policy-fall-2024/"
+          }
+        ]
+      ]
+    }
+  ]
+},
+{
+  "title": "Politics & civic life",
+  "intro": [],
+  "items": [
+    {
+      "title": "American Government: Constitutional Foundations",
+      "body": [
+        [
+          "Choose the free audit on edX. Explore how constitutional rules shape institutions and civil liberties."
+        ],
+        [
+          {
+            "text": "Dig deeper. ",
+            "strong": true
+          },
+          "Pick a civil liberty. Which institutions can protect it?"
+        ],
+        [
+          {
+            "text": "Harvard · Open course",
+            "url": "https://pll.harvard.edu/course/american-government-constitutional-foundations"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Constitutional Interpretation",
+      "body": [
+        [
+          "Free, noncredit course on competing ways to read the U.S. Constitution."
+        ],
+        [
+          {
+            "text": "Dig deeper. ",
+            "strong": true
+          },
+          "Could two readers agree on the words of a clause and disagree on what it requires?"
+        ],
+        [
+          {
+            "text": "Princeton · Open course",
+            "url": "https://online.princeton.edu/constitutional-interpretation"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Citizen Politics in America",
+      "body": [
+        [
+          "Free edX audit on public opinion, elections, interest groups, and media."
+        ],
+        [
+          {
+            "text": "Dig deeper. ",
+            "strong": true
+          },
+          "Follow one local issue. Whose voices reach decision-makers, and how?"
+        ],
+        [
+          {
+            "text": "Harvard · Open course",
+            "url": "https://pll.harvard.edu/course/citizen-politics-america-public-opinion-elections-interest-groups-and-media"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "U.S. Public Policy",
+      "body": [
+        [
+          "Free edX audit exploring how American social, economic, and foreign policy takes shape."
+        ],
+        [
+          {
+            "text": "Dig deeper. ",
+            "strong": true
+          },
+          "Choose a policy you care about. Which level of government can change it?"
+        ],
+        [
+          {
+            "text": "Harvard · Open course",
+            "url": "https://pll.harvard.edu/course/us-public-policy-social-economic-and-foreign-policies"
+          }
+        ]
+      ]
+    }
+  ]
+},
+
+{
+  "title": "Happiness & emotions",
+  "intro": [],
+  "items": [
+    {
+      "title": "The Science of Well-Being",
+      "body": [
+        [
+          "Laurie Santos explores why our predictions about happiness can miss the mark. Choose the free video option on Yale’s page."
+        ],
+        [
+          {
+            "text": "Yale · Open resource",
+            "url": "https://online.yale.edu/courses/science-well-being"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Managing Happiness",
+      "body": [
+        [
+          "Explore how relationships, habits, and achievement shape happiness. Choose the free edX audit. The verified certificate costs extra."
+        ],
+        [
+          {
+            "text": "Harvard · Open resource",
+            "url": "https://pll.harvard.edu/course/managing-happiness"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "What emotions communicate",
+      "body": [
+        [
+          "A free lecture on smiles, fear, and the signals we pick up from other people. Includes a transcript."
+        ],
+        [
+          {
+            "text": "Yale · Open resource",
+            "url": "https://oyc.yale.edu/psychology/psyc-110/lecture-11"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Emotions in relationships",
+      "body": [
+        [
+          "Continue with part two of the open lecture series on emotion and reason."
+        ],
+        [
+          {
+            "text": "Yale · Open resource",
+            "url": "https://oyc.yale.edu/psychology/psyc-110/lecture-12"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "The Good Life: Happiness",
+      "body": [
+        [
+          "Short on time? Start at chapter three of this free lecture for the discussion of happiness."
+        ],
+        [
+          {
+            "text": "Yale · Open resource",
+            "url": "https://oyc.yale.edu/psychology/psyc-110/lecture-20"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Emotion and motivation",
+      "body": [
+        [
+          "Watch an open psychology lecture on how we experience, express, and regulate emotion."
+        ],
+        [
+          {
+            "text": "MIT · Open resource",
+            "url": "https://ocw.mit.edu/courses/9-00sc-introduction-to-psychology-fall-2011/pages/emotion-motivation/"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Three good things",
+      "body": [
+        [
+          "A free writing practice. Recall three things that went well and consider why each happened."
+        ],
+        [
+          {
+            "text": "UC Berkeley · Open resource",
+            "url": "https://ggia.berkeley.edu/practice/three-good-things"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Listen with empathy",
+      "body": [
+        [
+          "Try a free guided listening exercise the next time someone shares a different perspective."
+        ],
+        [
+          {
+            "text": "UC Berkeley · Open resource",
+            "url": "https://ggia.berkeley.edu/bridging/practices/listen-with-empathy/"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Take an awe outing",
+      "body": [
+        [
+          "Use a free observation exercise to look for something surprising on a familiar route."
+        ],
+        [
+          {
+            "text": "UC Berkeley · Open resource",
+            "url": "https://ggia.berkeley.edu/practice/awe_walk"
+          }
+        ]
+      ]
+    }
+  ]
+},
+{
+  "title": "Creative workshops",
+  "intro": [],
+  "items": [
+    {
+      "title": "Write a short story",
+      "body": [
+        [
+          "Pick a free fiction exercise to practice one piece of storytelling before drafting a whole story."
+        ],
+        [
+          {
+            "text": "MIT · Open resource",
+            "url": "https://ocw.mit.edu/courses/21w-755-writing-and-reading-short-stories-spring-2012/pages/assignments/"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Experiment with poetry",
+      "body": [
+        [
+          "Try an imitation exercise or use the rhythm of an ordinary day to begin a poem. Open assignment collection."
+        ],
+        [
+          {
+            "text": "MIT · Open resource",
+            "url": "https://ocw.mit.edu/courses/21w-756-writing-and-reading-poems-fall-2006/pages/assignments/"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Photography and truth",
+      "body": [
+        [
+          "Explore what a photograph reveals or leaves out through open photography assignments."
+        ],
+        [
+          {
+            "text": "MIT · Open resource",
+            "url": "https://ocw.mit.edu/courses/21a-348-photography-and-truth-spring-2008/pages/assignments/"
+          }
+        ]
+      ]
+    },
+    {
+      "title": "Turn a walk into a story",
+      "body": [
+        [
+          "Use a free creative writing assignment to turn observations from the street into a piece of your own."
+        ],
+        [
+          {
+            "text": "MIT · Open resource",
+            "url": "https://ocw.mit.edu/courses/21l-488-contemporary-literature-street-haunting-in-the-global-city-spring-2018/pages/assignments/"
+          }
+        ]
+      ]
+    }
+  ]
+},
     {
       title: "Free classes and educational catalogs",
       intro: [["The listed lessons or open materials can be used for free. Some platforms charge for certificates, exams, instructor support, or additional features. Library-based access depends on your card and local offerings. Start with the suggested class or topic, then use the catalog to go deeper."]],
@@ -201,7 +556,7 @@ export const everydayGuides = {
         {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "SQLBolt", "url": "https://sqlbolt.com/"}], [{"text": "Start with", "strong": true}, " Complete the interactive SELECT, filtering, and JOIN lessons."]], "title": "SQL"},
         {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "Kaggle Learn", "url": "https://www.kaggle.com/learn"}], [{"text": "Start with", "strong": true}, " Start with Python or Pandas. An account is required for interactive work."]], "title": "Data analysis and machine learning"},
         {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "IBM SkillsBuild", "url": "https://skillsbuild.org/adult-learners"}], [{"text": "Start with", "strong": true}, " Browse AI fundamentals and verify availability for your account type."]], "title": "AI and digital literacy"},
-        {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "Cisco Skills for All", "url": "https://skillsforall.com/"}], [{"text": "Start with", "strong": true}, " Look for Introduction to Cybersecurity and focus on securing personal accounts and devices."]], "title": "Defensive cybersecurity"},
+        {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "Cisco Introduction to Cybersecurity", "url": "https://www.netacad.com/courses/introduction-to-cybersecurity"}], [{"text": "Start with", "strong": true}, " Look for Introduction to Cybersecurity and focus on securing personal accounts and devices."]], "title": "Defensive cybersecurity"},
         {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "HubSpot Academy", "url": "https://academy.hubspot.com/"}], [{"text": "Start with", "strong": true}, " Start with Inbound Sales. Free registration may be required."]], "title": "Sales and customer discovery"},
         {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "Google Skillshop", "url": "https://skillshop.withgoogle.com/"}], [{"text": "Start with", "strong": true}, " Choose Google Analytics training or another topic that matches a real project."]], "title": "Marketing and analytics"},
         {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "MIT OpenCourseWare", "url": "https://ocw.mit.edu/search/"}], [{"text": "Start with", "strong": true}, " Search for “Leadership and Personal Effectiveness” or “Operations Management.”"]], "title": "Leadership and operations"},
@@ -210,7 +565,7 @@ export const everydayGuides = {
         {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "Language Transfer", "url": "https://www.languagetransfer.org/free-courses-1"}], [{"text": "Start with", "strong": true}, " Try an introductory audio lesson and answer aloud before hearing the response."]], "title": "Languages"},
         {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "Khan Academy Arts and Humanities", "url": "https://www.khanacademy.org/humanities"}], [{"text": "Start with", "strong": true}, " Choose an art history unit and compare how two works communicate an idea."]], "title": "Arts and design"},
         {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "OpenStax subject catalog", "url": "https://openstax.org/subjects"}], [{"text": "Start with", "strong": true}, " Choose a free web textbook in business, science, humanities, or social sciences."]], "title": "General education textbooks"},
-        {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "Buncombe County Public Libraries", "url": "https://www.buncombenc.gov/161/Libraries"}, " and ", {"text": "A-B Tech Continuing Education", "url": "https://abtech.edu/continuing-education"}], [{"text": "Start with", "strong": true}, " Check library events and A-B Tech’s current listings for free workshops, career support, and classes with fee or eligibility requirements."]], "title": "Asheville-area learning"},
+        {"body": [[{"text": "Free class or catalog", "strong": true}, " ", {"text": "Buncombe County Public Libraries", "url": "https://www.buncombenc.gov/161/Libraries"}, " and ", {"text": "A-B Tech Continuing Education", "url": "https://abtech.edu/ce-schedule"}], [{"text": "Start with", "strong": true}, " Check library events and A-B Tech’s current listings for free workshops, career support, and classes with fee or eligibility requirements."]], "title": "Asheville-area learning"},
         {"body": [["In week one, pick one skill and record a starting example. In week two, finish one lesson and apply it. In week three, ask for feedback and redo the activity. In week four, save the finished example and decide what to practice next."]], "title": "Open the four-week learning plan"},
       ]
     },

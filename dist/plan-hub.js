@@ -1,4 +1,5 @@
-import { everydayTools } from './everyday-tools.js';
+import { projectTracker } from './project-tracker.js';
+import { everydayTools, learningCards } from './everyday-tools.js';
 import { topicRoutes, viewRoutes, valuesExerciseRoute } from './routes.js';
 import { answerSelection } from './answer-selection.js';
 import { profile } from './discovery-content.js';
@@ -6,6 +7,20 @@ import { personalityEvidence } from './deeper.js';
 import { mirrorSources, practiceFor } from './growth.js';
 import { taskList } from './journey-content.js';
 import { meanings } from './value-cards.js';
+
+const activityPrompts = [
+  'What did you try, and what drew you to it?',
+  'How did you feel before, during, and afterward?',
+  'What surprised you? Still here, or did you explode into a cloud of vapor?',
+  'Was it worth your time? What made it feel that way?',
+  'What would you repeat, change, or happily leave behind?'
+];
+
+function disclosure(node, text) {
+  const box = node('details', '', 'follow-up activity-disclosure');
+  box.append(node('summary', text));
+  return box;
+}
 
 const sections = [
   ['personality', 'Personality', '◈', ['When do these preferences show up most clearly?', 'When do you work differently?', 'What strength could you use more deliberately?', 'Who could give you a concrete example of how you show up?', 'What preference would you like to stretch?']],
@@ -45,7 +60,7 @@ export function hubEvidence(state, section) {
     values: [...selected.map((value) => [value, valueMeanings[value] || meanings[value]?.[0]]), ['Value trade-off', d.tradeoff], ['Values in my words', confirmed.values]],
     goals: [['90-day goal', state.plan?.goal], ['Weekly action', state.plan?.action], ['Evidence to track', state.plan?.tracker], ['Goal in my own words', confirmed.goal],
       ...targets.flatMap((target) => [[target.area, target.goal], ['Why this matters', target.why], ['Evidence of progress', target.proof]])],
-    activities: [...tasks.map((task) => [`${task.timing} · ${task.title}`, task.detail]),
+    activities: [...(state.activityReflections || []).flatMap((item) => [[item.title, item.note || item.title], ...Object.entries(item.answers).map(([q, a]) => [item.title + " · " + q, a])]), ...tasks.map((task) => [`${task.timing} · ${task.title}`, task.detail]),
       ...tasks.flatMap((task) => [[`${task.title} · What I learned`, state.activityNotes?.[task.id]], [`${task.title} · Status`, state.completedActivities?.[task.id] ? 'Completed' : '']])],
     skills: [...skills.map((skill) => ['Skill to develop', skill]), ['Practice', r.practice],
       ['Baseline self-rating', r.baseline], ['Target self-rating', r.target],
@@ -59,7 +74,7 @@ export function hubEvidence(state, section) {
   return { entries: validPairs([...common, ...(evidence[section] || []), ...Object.entries(state.planHub?.[section]?.responses || {}), ['My values exercise', state.planHub?.[section]?.tradeoff]]), selected, skills };
 }
 
-export function planHub({ host, read, save, node, button, notify, activities, accomplishments, openPage, openAccomplishments, openLibrary, addPractice, assessment }) {
+export function planHub({ host, read, save, node, button, notify, activities, accomplishments, openPage, openAccomplishments, openLibrary, addPractice, assessment, planSettings }) {
   function pageLink(label, path, className) {
     const link = node('a', label, className);
     link.href = path;
@@ -70,11 +85,12 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
     };
     return link;
   }
+  const tracker = () => projectTracker({read,save,node,button,notify,aiDraft});
   function renderHub() {
     const intro = node('div', '', 'section-intro topic-intro topic-plan');
-    const heading = node('h1', 'Your personal operating system');
+    const heading = node('h1', 'Plan Hub');
     heading.tabIndex = -1;
-    intro.append(heading, node('p', 'Choose an area to explore, practice, or reflect on.'));
+    intro.append(heading, node('p', 'Shape your goal, choose your exercises, and capture what you learn.'));
     const nav = node('nav', '', 'hub-nav');
     nav.setAttribute('aria-label', 'Plan sections');
     const brain = node('div', '', 'hub-brain');
@@ -88,10 +104,50 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
       control.append(icon, node('span', name, 'hub-label'));
       nav.append(control);
     }
-    const achievements = node('article', '', 'hub-panel topic-accomplishments');
-    achievements.append(node('h2', 'Accomplishments'), accomplishments(),
-      pageLink('Open accomplishments', viewRoutes.accomplishments, 'topic-page-link'));
-    host.replaceChildren(intro, nav, achievements);
+    const tools = node('div', '', 'hub-tools');
+    function toolCard(label, icon, content) {
+      const box = node('details', '', 'hub-tool');
+      const summary = node('summary', '');
+      const mark = node('span', icon, 'hub-symbol');
+      mark.setAttribute('aria-hidden', 'true');
+      summary.append(mark, node('span', label));
+      box.append(summary);
+      box.ontoggle = () => {
+        if (box.open && box.children.length === 1) box.append(content());
+      };
+      return box;
+    }
+    const tests = assessment();
+    tests.classList.add('hub-tool');
+    const testIcon = node('span', hubIcons.personality, 'hub-symbol');
+    testIcon.setAttribute('aria-hidden', 'true');
+    tests.querySelector('summary').prepend(testIcon);
+    const insight = toolCard('Add an insight', hubIcons.reflection, () => {
+      const form = node('form', '', 'insight-entry');
+      const label = node('label', 'What did you notice or learn?');
+      const note = node('textarea');
+      note.required = true;
+      label.append(note);
+      const saved = node('ul');
+      for (const value of [...(read().personalInsights || [])].reverse()) saved.append(node('li', value));
+      form.append(label, node('button', 'Save insight'), saved,
+        pageLink('Explore my insights', '/discover?topic=insights', 'topic-page-link'));
+      form.onsubmit = event => {
+        event.preventDefault();
+        const value = note.value.trim(), state = read();
+        if (!value) return note.focus();
+        if (save({...state, personalInsights: [...(state.personalInsights || []), value]})) {
+          saved.prepend(node('li', value));
+          note.value = '';
+          notify('Insight saved.');
+        }
+      };
+      return form;
+    });
+    tools.append(insight, tests, toolCard('My 90-day plan', hubIcons.goals, tracker),
+      toolCard('Assessments and check-ins', hubIcons.reflection, planSettings),
+      pageLink('View my roadmap', viewRoutes.roadmap, 'topic-page-link'));
+    host.replaceChildren(intro, nav, tools);
   }
 
   function render(key) {
@@ -127,49 +183,82 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
       const shortcuts = node('nav', '', 'personality-shortcuts');
       shortcuts.setAttribute('aria-label', 'Personality sections');
       for (const [id, label, icon] of [
-        ['questions', 'Questions', '◈'], ['reflections', 'Reflections', '◐'],
-        ['activities', 'Activities', '▤'], ['proud', 'Things I’m Proud Of', '✦']
+        ['questions', 'Questions', hubIcons.learning], ['reflections', 'Reflections', hubIcons.reflection],
+        ['activities', 'Activities', hubIcons.activities], ['proud', 'Things I’m Proud Of', hubIcons.skills]
       ]) {
-        const shortcut = button(label, () => {
+        const shortcut = button('', () => {
           const heading = host.querySelector(`#personality-${id}`);
+          if (heading.parentElement.tagName === 'DETAILS') heading.parentElement.open = true;
           heading.focus({ preventScroll: true });
           heading.scrollIntoView({ block: 'start' });
-        }, `quiet personality-shortcut personality-${id}`);
-        const symbol = node('span', icon);
+        }, `hub-link personality-tile personality-${id}`);
+        const symbol = node('span', icon, 'hub-symbol');
         symbol.setAttribute('aria-hidden', 'true');
-        shortcut.prepend(symbol);
+        shortcut.append(symbol, node('span', label, 'hub-label'));
         shortcuts.append(shortcut);
       }
-      panel.append(shortcuts, assessment());
+      const rows = node('div', '', 'personality-options');
+      const library = node('details', '', 'follow-up');
+      library.append(node('summary', 'Explore the library'), pageLink('Browse resources', viewRoutes.library, 'topic-page-link'));
+      rows.append(assessment(), library);
+      panel.append(shortcuts, rows);
     }
     if (key === 'reflection') {
       panel.append(node('p', 'Use your answers to decide what you can control, what you can influence, and what you may need to leave open.'),
         everydayTools({ guide: 'feeling', node, button }));
     }
     if (key === 'skills') panel.append(everydayTools({ guide: 'skills', node, button, addPractice: state.plan ? addPractice : undefined }));
-    if (key === 'learning') panel.append(everydayTools({ guide: 'classes', node, button }));
+    if (key === 'learning') panel.append(learningCards({ node, skills, practiceFor }));
     if (key === 'values') panel.append(pageLink(selected.length === 5 ? 'Revisit the values exercise' : 'Start the values exercise', valuesExerciseRoute, 'topic-page-link'));
     if (key === 'values' && selected.length === 5) {
       const badges = node('ul', '', 'value-badges');
       for (const value of selected) badges.append(node('li', value));
       panel.append(badges);
     }
-    if (key === 'activities' && state.plan) panel.append(activities());
-    if (key === 'learning' || key === 'personality') {
-      panel.append(button('Explore the library', openLibrary, 'quiet'));
+    if (key === 'activities') {
+      panel.append(node('p', 'An activity is something you try in real life to see what it’s like for you. Pick something you’re curious about, give it a go, then come back and jot down what happened. Five minutes counts.'));
+      const examples = disclosure(node, 'Help me find an activity');
+      examples.append(node('p', 'Start with what you want a little more of today.'),
+        node('p', 'Connection: Ask someone you miss to take a ten-minute walk.'),
+        node('p', 'Play: Put on one song and shoot baskets, dance, or sketch until it ends.'),
+        node('p', 'Confidence: Ask one question you’d usually keep to yourself. Notice what happens.'),
+        pageLink('Browse the resource library', viewRoutes.library, 'topic-page-link'));
+      const write = disclosure(node, 'Reflect on an activity');
+      const journal = node('form');
+      const input = (parent, prompt, tag) => {
+        const label = node('label', prompt);
+        const control = node(tag);
+        label.append(control);
+        parent.append(label);
+        return control;
+      };
+      const name = input(journal, 'Give your activity a name', 'input');
+      name.required = true;
+      const note = input(journal, 'Tell the story in your own words (optional)', 'textarea');
+      const guided = disclosure(node, 'Dig deeper with five questions');
+      const answers = activityPrompts.map(q => [q, input(guided, q, 'textarea')]);
+      journal.append(guided, node('button', 'Save my reflection'));
+      journal.onsubmit = event => {
+        event.preventDefault();
+        if (!name.value.trim()) { name.focus(); return; }
+        const current = read();
+        const reflection = {title: name.value.trim(), note: note.value.trim(), answers: Object.fromEntries(answers.map(([q, el]) => [q, el.value.trim()]).filter(([, a]) => a))};
+        if (save({...current, activityReflections: [...(current.activityReflections || []), reflection]})) {
+          render(key);
+          host.querySelector('h1').focus();
+          notify('Reflection saved.');
+        }
+      };
+      write.append(node('p', 'Write a quick note or open the questions. When you request an AI overview, you choose which answers it can use.'), journal);
+      panel.append(examples, write);
+      if (state.plan) {
+        const plan = disclosure(node, 'See activities from my plan');
+        plan.append(activities());
+        panel.append(plan);
+      }
     }
     if (key === 'learning') {
-      const resources = [...new Map(skills.flatMap((skill) => practiceFor(skill)?.resources || []).map(([name, url]) => [url, name]))];
-      if (resources.length) {
-        panel.append(node('h3', 'Free learning'));
-        for (const [url, name] of resources) {
-          const link = node('a', name);
-          link.href = url;
-          const item = node('p', '');
-          item.append(link);
-          panel.append(item);
-        }
-      }
+      panel.append(pageLink('Dig deeper in the Library', viewRoutes.library, 'topic-page-link'));
     }
     if (entries.length) {
       const source = node('details', '', 'follow-up');
@@ -211,7 +300,8 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
         pageLink('Explore reflection questions', viewRoutes.discover + '?topic=reflection', 'topic-page-link'));
     }
     showAccepted();
-    if (entries.length) panel.append(aiDraft({ title, entries, node, button, accept(draft) {
+    const wins = (state.accomplishments || []).map(({ date, title, note }) => [date + " · " + title, note || title]);
+    if (entries.length || wins.length) panel.append(aiDraft({ title, entries, wins, node, button, accept(draft) {
       if (persist({ accepted: draft })) { render(key); host.querySelector('h1').focus(); notify('Overview accepted.'); }
     } }));
 
@@ -238,7 +328,13 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
       const newAnswers = Object.fromEntries(responses.map(([question, input]) => [question, input.value.trim()]));
       if (persist({ responses: { ...previous, ...newAnswers } })) notify('Answers saved.');
     };
-    panel.append(form);
+    const questionsBox = disclosure(node, 'Explore five follow-up questions');
+    if (key === 'personality') {
+      questionTitle.removeAttribute('id');
+      questionsBox.firstChild.id = 'personality-questions';
+    }
+    questionsBox.append(form);
+    if (key !== 'activities' || saved.accepted || Object.keys(saved.responses || {}).length) panel.append(questionsBox);
     if (key === 'personality') {
       const activityTitle = node('h2', 'Activities');
       activityTitle.id = 'personality-activities';
@@ -250,21 +346,21 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
       label.append(activity);
       panel.append(label, button('Save activity reflection', () => {
         if (persist({ personalityActivity: activity.value.trim() })) notify('Activity reflection saved.');
-      }), pageLink('See all plan activities', topicRoutes.activities, 'topic-page-link'));
+      }), pageLink('Find activity ideas and guided reflections', topicRoutes.activities, 'topic-page-link'));
       const proud = node('h2', 'Things I’m Proud Of');
       proud.id = 'personality-proud';
       proud.tabIndex = -1;
-      panel.append(proud, accomplishments(), button('Add an accomplishment', openAccomplishments, 'quiet'));
+      panel.append(proud, accomplishments(), button('Add to my Smile File', openAccomplishments, 'quiet'));
     }
     host.replaceChildren(back, panel);
   }
-  return { render };
+  return { render, tracker };
 }
 
-function aiDraft({ title, entries, node, button, accept }) {
+function aiDraft({ title, entries, wins, node, button, accept }) {
   const box = node('details', '', 'follow-up hub-ai');
   box.append(node('summary', 'Draft an AI overview'), node('p', 'If you generate an overview, only the answers you select will be sent to OpenAI. Privacy Vault entries are excluded.'));
-  const sources = answerSelection([['Answers for this section', entries]], node);
+  const sources = answerSelection([['Answers for this section', entries], ['From my smile file', wins]], node);
   const status = node('p', '');
   status.setAttribute('role', 'status');
   const draftView = node('div', '');
@@ -290,7 +386,11 @@ function aiDraft({ title, entries, node, button, accept }) {
       for (const [label, items] of [['Key insights', draft.insights], ['Five follow-up questions', draft.questions]]) {
         const list = node('ul', '');
         for (const item of items) list.append(node('li', item));
-        draftView.append(node('h3', label), list);
+        if (label === 'Five follow-up questions') {
+          const followUp = disclosure(node, 'See five follow-up questions');
+          followUp.append(list);
+          draftView.append(followUp);
+        } else draftView.append(node('h3', label), list);
       }
       const controls = node('div', '', 'actions');
       const edit = node('form', '');

@@ -52,7 +52,7 @@ const typeStyles = {
   Memoir: ['menu_book', 'memoirs'], Tool: ['checklist', 'tools'], Community: ['auto_awesome', 'tools'],
   Borrowing: ['menu_book', 'publications']
 };
-const pageSize = 12;
+
 
 export function filterLibrary(resources, { query = '', format = '', theme = '', featured = false } = {}) {
   const words = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
@@ -65,7 +65,7 @@ export function filterLibrary(resources, { query = '', format = '', theme = '', 
 
 export function library({ host, node, button }) {
   let filter = {};
-  let visibleCount = pageSize;
+
 
   function externalLink(label, url) {
     const link = node('a', label);
@@ -76,14 +76,14 @@ export function library({ host, node, button }) {
   function resourceCard(resource) {
     const { format, theme, title, by, url, description, prompt } = resource;
     const [glyph, style] = typeStyles[format] || ['checklist', 'publications'];
-    const card = node('article', '', `library-card library-${style}`);
+    const card = node('details', '', `learning-topic library-card library-${style}`);
     const artwork = node('span', glyph, 'library-art hub-symbol');
     artwork.setAttribute('aria-hidden', 'true');
     const head = node('div', '', 'library-card-head');
     head.append(artwork, node('p', `${format} · ${theme}`, 'library-meta'));
     const exercise = node('details', '', 'follow-up');
     exercise.append(node('summary', 'Try it'), node('p', prompt));
-    card.append(head, node('h2', title), node('p', by, 'library-credit'), node('p', description),
+    card.append(node('summary', title), head, node('p', by, 'library-credit'), node('p', description),
       externalLink('Open resource', url), exercise);
     return card;
   }
@@ -113,6 +113,9 @@ export function library({ host, node, button }) {
     guideLink.href = '#library-guides';
     intro.append(heading, node('p', 'Find books, listening, and practical tools for what you’re working through.'), guideLink);
 
+    const courses = externalLink('Dig deeper with university courses', '/learning');
+    courses.className = 'topic-page-link';
+    intro.append(courses);
     const controls = node('div', '', 'library-controls');
     const searchLabel = node('label', 'Search resources');
     const search = document.createElement('input');
@@ -154,26 +157,26 @@ export function library({ host, node, button }) {
 
     const count = node('p', '', 'library-count');
     count.setAttribute('role', 'status');
-    const grid = node('div', '', 'library-grid');
-    const more = button('Show more resources', () => {
-      const first = visibleCount;
-      visibleCount += pageSize;
-      showResults();
-      const next = grid.children[first]?.querySelector('h2');
-      if (next) { next.tabIndex = -1; next.focus(); }
-    }, 'quiet');
-
+    const grid = node('div', '', 'learning-browser learning-grid');
     function showResults() {
       const results = filterLibrary(libraryResources, filter);
-      grid.replaceChildren(...results.slice(0, visibleCount).map(resourceCard));
-      count.textContent = results.length ? `Showing ${Math.min(visibleCount, results.length)} of ${results.length} resources` :
-        'No matching resources. Try a different search or clear the filters.';
-      more.hidden = results.length <= visibleCount;
+      const formats = [...new Set(results.map(resource => resource.format))];
+      grid.replaceChildren(...formats.map(formatName => {
+        const items = results.filter(resource => resource.format === formatName);
+        const category = node('details', '', 'learning-category');
+        category.append(node('summary', formatName + ' (' + items.length + ')'));
+        const topics = node('div', '', 'learning-topics');
+        topics.append(...items.map(resourceCard));
+        category.append(topics);
+        category.open = Boolean(filter.query || filter.format || filter.theme || filter.featured);
+        return category;
+      }));
+      count.textContent = results.length ? results.length + ' resources' : 'No matching resources. Try a different search or clear the filters.';
     }
 
     function refresh() {
       filter = { query: search.value, format: format.value, theme: theme.value, featured: featured.checked };
-      visibleCount = pageSize;
+
       showResults();
     }
 
@@ -186,7 +189,7 @@ export function library({ host, node, button }) {
       collection('Four practices to try', middleTheoryPractices),
       everydayTools({ guide: 'living', node, button, excludeResourceUrls: new Set(libraryResources.map(({ url }) => resourceKey(url))) }),
       everydayTools({ guide: 'growing', node, button }));
-    host.replaceChildren(intro, controls, count, grid, more, guides);
+    host.replaceChildren(intro, controls, count, grid, guides);
     showResults();
   }
   return { render };

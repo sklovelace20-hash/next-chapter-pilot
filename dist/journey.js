@@ -130,7 +130,21 @@ export function journey({ host, read, save, node, button, notify, open, home, fi
       ['What would help most right now?', ['Clarity', 'Support', 'A skill to practice', 'A small experiment', 'Time or space', 'Still unsure']],
       ['True or false: I can name what I want to change in one sentence.', ['True', 'False', 'Not sure']]
     ]) fields.push([question, field(element, question, Object.fromEntries(state.entries || [])[question], false, options)]);
-    element.append(action);
+    let current = 0;
+    const navigation = node('div', '', 'actions');
+    const previous = button('Previous question', () => display(current - 1), 'quiet');
+    const more = button('Dig deeper', () => display(current + 1), 'quiet');
+    previous.type = more.type = 'button';
+    navigation.append(previous, more);
+    function display(index, focus = true) {
+      current = index;
+      fields.forEach(([, input], position) => { input.closest('label').hidden = position !== current; });
+      previous.hidden = current === 0;
+      more.hidden = current === fields.length - 1;
+      if (focus) fields[current][1].focus();
+    }
+    display(0, false);
+    element.append(navigation, action);
   }
 
   function localSummary(state, final) {
@@ -182,6 +196,16 @@ export function journey({ host, read, save, node, button, notify, open, home, fi
       editor.focus();
     }, 'quiet');
     controls.append(acceptButton, editButton, saveEditButton);
+    const skip = button('Skip AI draft', () => {
+      summary = initial;
+      follow = [];
+      preview.textContent = editor.value = initial;
+      label.textContent = 'Answer recap';
+      editor.closest('label').hidden = saveEditButton.hidden = skip.hidden = true;
+      ai.focus();
+    }, 'quiet');
+    skip.hidden = true;
+    controls.append(skip);
     const ai = button(openingIdeas ? 'Generate a summary and tailor the next 10 questions' : 'Generate AI summary', async () => {
       ai.disabled = true;
       acceptButton.disabled = true;
@@ -200,6 +224,7 @@ export function journey({ host, read, save, node, button, notify, open, home, fi
         summary = [result.overview, ...result.insights].join('\n\n');
         follow = result.questions.length === 10 ? result.questions : [];
         label.textContent = 'AI draft';
+        skip.hidden = false;
         preview.textContent = summary;
         editor.value = summary;
         status.textContent = 'AI draft ready to review.';
