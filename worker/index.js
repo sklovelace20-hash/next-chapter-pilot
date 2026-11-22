@@ -42,7 +42,7 @@ export async function reflect(request, env) {
     }
     const payload = JSON.parse(raw + decoder.decode());
     if (typeof payload === 'string') input = payload;
-    else if (payload && ['journey-round', 'journey-final', 'plan-output', 'assessment', 'plan-tailoring'].includes(payload.mode)) {
+    else if (payload && ['journey-round', 'journey-final', 'plan-output', 'assessment', 'plan-tailoring', 'personality-refresh'].includes(payload.mode)) {
       input = payload.input;
       mode = payload.mode;
       if (mode === 'assessment') document = payload.document;
@@ -73,7 +73,9 @@ export async function reflect(request, env) {
       // Older clients may send plain text.
     }
   }
-  const guidance = mode === 'journey-round'
+  const guidance = mode === 'personality-refresh'
+    ? 'Refresh the personality summary using the supplied answer patterns and rubric. Treat them as self-reported preferences in specific situations, not ability, diagnosis, or a fixed type. Respect the person’s corrections and note context-dependent or partial results. Give one concise overview, up to three specific insights, and exactly five short open follow-up questions asking for concrete examples. If a Roadmap milestone was supplied, use profile.tryNext for one small action tied to the same goal and milestone. Preserve any relevant report-backed timing or duration. Leave profile.tryNext empty if the existing move already fits or no change is supported.'
+    : mode === 'journey-round'
     ? 'For this discovery round, distinguish observations from assumptions and generate exactly 10 distinct, short follow-up questions grounded in the answers. Ask for concrete examples and alternatives.'
     : mode === 'journey-final'
       ? 'For this cumulative discovery review, give exactly four short labeled insights: What stands out, Where you might be holding back, What seems clear, and Where to dig deeper. If evidence is missing, say what to ask rather than speculate. Generate two open questions. Treat accepted summaries and corrections as the person’s current account.'
