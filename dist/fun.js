@@ -29,6 +29,14 @@ export function funPage({ get, node }) {
   const grid = get('fun-ideas');
   const pick = get('fun-pick');
   let previous;
+  for (const shortcut of document.querySelectorAll('[data-fun-section]')) {
+    shortcut.onclick = () => {
+      const target = get(shortcut.dataset.funSection);
+      if (target.tagName === 'SUMMARY') target.parentElement.open = true;
+      target.focus({ preventScroll: true });
+      target.scrollIntoView({ block: 'start' });
+    };
+  }
   const matching = () => ideas.filter(([, , tags]) => !filter.value || tags.includes(filter.value));
 
   for (const [label, suggestion] of barriers) {

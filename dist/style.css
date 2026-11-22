@@ -892,3 +892,35 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
 @media (max-width: 600px) {
   #library .library-resource, #library .resource-summary { min-block-size: 8.5rem; }
 }
+
+#fun .fun-sections { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+#fun .fun-sections button { min-height: 44px; }
+#fun .fun-quick { margin-bottom: 12px; }
+#fun .fun-quick-actions { display: flex; align-items: start; flex-wrap: wrap; gap: 8px; }
+#fun .fun-filter-details { margin: 0; padding: 0 10px; }
+#fun .fun-filter-details summary { display: list-item; min-height: 46px; padding-block: 12px; }
+#fun .fun-filter-details[open] { padding-bottom: 10px; }
+#fun .fun-filter-details label { margin: 0 0 4px; }
+#fun .fun-quick .fun-pick { margin: 8px 0 0; padding: 12px 14px; }
+#fun .fun-quick .fun-pick :is(h3,p) { margin: 0; }
+#fun .fun-quick .fun-pick p { margin-top: 4px; }
+#fun .fun-body { gap: 10px; }
+#fun .fun-body .bucket-card form { margin-bottom: 8px; }
+@media (min-width: 850px) {
+  #fun .fun-body { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  #fun .fun-collection { grid-column: 2; grid-row: 1 / span 2; }
+  #fun .fun-collection #fun-ideas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  body #fun > .section-intro { padding: 12px 14px; margin-bottom: 6px; }
+  #fun > .section-intro h1 { font-size: clamp(1.65rem, 7vw, 2rem); }
+  #fun > .section-intro p { display: none; }
+  #fun .fun-sections {
+    position: sticky; top: 110px; z-index: 4; display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 4px 0; background: var(--paper, #faf8fc);
+  }
+  #fun .fun-sections button { padding: 4px 5px; font-size: .81rem; }
+  #fun .fun-body > article { padding: 14px; }
+  html:has(#fun:not([hidden])) { scroll-padding-top: 172px; }
+}

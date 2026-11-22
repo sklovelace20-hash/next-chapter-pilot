@@ -53,29 +53,35 @@
 <h1 id="fun-title" tabindex="-1">Make room for fun.</h1>
 <p>What would you do today just because you’d enjoy it? Five minutes counts.</p>
 </div>
+<nav class="fun-sections" aria-label="Fun sections">
+<button type="button" class="quiet" data-fun-section="fun-bingo-title">Bucket List Bingo</button>
+<button type="button" class="quiet" data-fun-section="fun-collection-title">Ideas</button>
+<button type="button" class="quiet" data-fun-section="fun-barriers-title">What gets in the way</button>
+</nav>
+<div class="fun-quick">
+<div class="fun-quick-actions">
+<button type="button" id="fun-random">Surprise me</button>
+<details class="follow-up fun-filter-details"><summary>Filter ideas</summary><label for="fun-filter">What sounds good?</label><select id="fun-filter"><option value="">Anything</option><option>Quick</option><option>Outdoors</option><option>Creative</option><option>With someone</option><option>Low energy</option></select></details>
+</div>
+<article id="fun-pick" class="fun-pick" aria-live="polite" aria-atomic="true" hidden></article>
+</div>
 <div class="fun-body">
 <article class="fun-reflection bucket-card">
-<h2>Bucket List Bingo</h2><p>Add something you’d love to do. Tap its square when you’ve done it.</p>
+<h2 id="fun-bingo-title" tabindex="-1">Bucket List Bingo</h2><p>Add something you’d love to do. Tap its square when you’ve done it.</p>
 <form id="bucket-form"><label>What’s on your list?<input id="bucket-name" maxlength="160" required placeholder="Go to a college game"></label><button>Add to my board</button></form>
 <details id="bucket-inspo"><summary>Need inspo?</summary></details>
 <p id="bucket-progress"></p><div id="bucket-board" aria-label="Bucket list board" role="group"></div><div class="actions"><button id="bucket-prev" class="quiet">Previous board</button><button id="bucket-next" class="quiet">Next board</button></div><p id="bucket-status" role="status"></p>
 </article>
 <details class="fun-reflection page-details">
-<summary>What gets in the way today?</summary>
+<summary id="fun-barriers-title">What gets in the way today?</summary>
 <p>Pick what sounds familiar and try one small way around it.</p>
 <div id="fun-barriers" class="actions" role="group" aria-label="What gets in the way"></div>
 <p id="fun-reframe" role="status" hidden></p>
 <details class="follow-up"><summary>Give me something to think about</summary><p>What did you love doing before you cared whether you were good at it? What would the five-minute version look like now?</p></details>
 </details>
 <article class="fun-collection" aria-labelledby="fun-collection-title">
-<h2 id="fun-collection-title">Find something fun to do</h2>
+<h2 id="fun-collection-title" tabindex="-1">Find something fun to do</h2>
 <p>Every idea here is free using what you already have.</p>
-<div class="fun-controls">
-<label for="fun-filter">What sounds good?</label>
-<select id="fun-filter"><option value="">Anything</option><option>Quick</option><option>Outdoors</option><option>Creative</option><option>With someone</option><option>Low energy</option></select>
-<button id="fun-random">Surprise me</button>
-</div>
-<article id="fun-pick" class="fun-pick" aria-live="polite" aria-atomic="true" hidden></article>
 <div id="fun-ideas" class="features"></div>
 </article>
 </div>
