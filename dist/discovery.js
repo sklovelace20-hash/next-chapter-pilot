@@ -77,7 +77,8 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     if (position >= 0) {
       const { key, question: [question, left, right] } = all[position];
       const card = panel(question, `Personality · Question ${position + 1} of ${all.length}`);
-      card.append(node('p', 'Choose what feels natural in most situations. This short exercise explores preferences inspired by Myers-Briggs.'));
+      const about = node('details', '', 'follow-up discover-extra');
+      about.append(node('summary', 'About this exercise'), node('p', 'Choose what feels natural in most situations. The questions explore preferences inspired by Myers-Briggs.'));
       const choices = node('div', '', 'preference-choices');
       for (const [answer, label, mark] of [[1, left, '◒'], [-1, right, '◓'], [0, 'It depends', '≈']]) {
         const choice = button('', () => {
@@ -94,6 +95,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
         delete next[all[position - 1].key];
         if (write({ traits: next })) open('profile');
       }, 'quiet'));
+      card.append(about);
       body.append(card);
       return;
     }
@@ -108,7 +110,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     const other = field(form, 'Another strength', data().otherStrength, true);
     const example = field(form, 'When did one of these strengths make a difference?', data().strengthExample);
     submit(form, 'Save strengths and continue', () => {
-      if (write({ strengths: selected(), otherStrength: other.value.trim(), strengthExample: example.value.trim() })) open('values');
+      if (write({ strengths: selected(), otherStrength: other.value.trim(), strengthExample: example.value.trim() })) openPage('/discover?topic=values');
     });
     strengthCard.append(form);
     body.append(card, strengthCard);
@@ -171,23 +173,26 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     }[key] || 'What makes that significant to you, and what would you like to understand better?';
     const clarify = field(detail, thirdQuestion, saved.clarify);
     detail.open = Boolean(saved.follow || saved.clarify);
-    form.append(detail);
+    detail.classList.add('discover-extra');
     const next = () => {
       if (promptIndex + 1 < questions.length) open(name, promptIndex + 1);
       else if (name === 'career') open('career', questions.length);
       else openPage('/discover?topic=insights');
     };
-    submit(form, 'Save and continue', () => {
+    const saveAnswer = submit(form, 'Save and continue', () => {
       if (write({ [name]: { ...existing, [key]: { answer: answer.value.trim(), follow: follow.value.trim(), clarify: clarify.value.trim() } } })) next();
     });
+    const actions = node('div', '', 'discover-actions');
+    actions.append(saveAnswer);
     const skip = button('Skip for now', next, 'quiet');
     skip.type = 'button';
-    form.append(skip);
+    actions.append(skip);
     if (promptIndex) {
       const back = button('Previous question', () => open(name, promptIndex - 1), 'quiet');
       back.type = 'button';
-      form.append(back);
+      actions.append(back);
     }
+    form.append(actions, detail);
     card.append(form);
     body.append(card);
   }
@@ -197,21 +202,26 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     const date = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
     const saved = data().mornings?.[date] || {};
     const card = panel('A few minutes for yourself', 'Three optional prompts, followed by three things you’re grateful for.');
-    card.append(button(data().morningEnabled ? 'Pause morning prompts' : 'Turn on morning prompts', () => {
-      if (write({ morningEnabled: !data().morningEnabled })) open('morning');
-    }, 'quiet'));
-    if (data().morningEnabled) {
+    const enabled = Boolean(data().morningEnabled);
+    const toggle = button(enabled ? 'Pause morning prompts' : 'Turn on morning prompts', () => {
+      if (write({ morningEnabled: !enabled })) open('morning');
+    }, enabled ? 'quiet' : undefined);
+    if (enabled) {
       const form = document.createElement('form');
       const questions = morningSets[Math.floor(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) / 86400000) % morningSets.length];
-      const answers = questions.map((question, index) => field(form, question, saved.answers?.[index]));
-      const gratitude = [1, 2, 3].map((index) => field(form, `I’m grateful for · ${index}`, saved.gratitude?.[index - 1], true));
+      const extras = node('details', '', 'follow-up discover-extra');
+      extras.append(node('summary', 'More prompts and gratitude'));
+      const answers = questions.map((question, index) => field(index ? extras : form, question, saved.answers?.[index]));
+      const gratitude = [1, 2, 3].map((index) => field(extras, `I’m grateful for · ${index}`, saved.gratitude?.[index - 1], true));
       submit(form, 'Save today’s reflection', () => {
         const values = (inputs) => inputs.map((input) => input.value.trim());
         const record = { date, questions, answers: values(answers), gratitude: values(gratitude) };
         if (write({ mornings: { ...data().mornings, [date]: record } })) notify('Morning reflection saved.');
       });
+      form.append(extras);
       card.append(form);
     }
+    card.append(toggle);
     const past = Object.values(data().mornings || {}).reverse();
     if (past.length) {
       const detail = node('details', '', 'follow-up');
@@ -249,7 +259,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     const info = data();
     const growth = state.growth || {};
     const draft = nextDraft(state);
-    const mirror = panel('Make it yours', 'Read back what you’ve shared. Is this correct? Does anything feel wrong? How would you put it in your own words?');
+    const mirror = panel('Make it yours', 'Review your answers and confirm what fits in your own words.');
     const sources = mirrorSources(state);
     for (const [title, entries] of sources) {
       const detail = node('details', '', 'follow-up');
@@ -431,7 +441,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     const header = node('div', '', `section-intro topic-intro topic-${current}`);
     const heading = node('h1', 'Discover what drives you');
     heading.tabIndex = -1;
-    header.append(heading, node('p', 'Choose one area to explore at your own pace.'));
+    header.append(heading, node('p', 'Choose one area to explore at your own pace.', 'discover-intro-copy'));
     const menu = node('nav', '', 'discover-menu');
     menu.setAttribute('aria-label', 'Discovery topics');
     for (const [key, title] of discoveryTopics) {

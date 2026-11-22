@@ -51,10 +51,13 @@ export function valueCards({ history, node, onSubmit }) {
   const counter = node('p', '', 'selection-count');
   counter.setAttribute('aria-live', 'polite');
   const grid = node('div', '', 'value-grid');
-  const instruction = node('p', 'Flip a card to read it. Use the checkbox below it to make your selection.', 'value-instruction');
+  const instruction = node('p', 'Flip a card to read it. Use the checkbox below it to make your selection.', 'value-instruction value-desktop-label');
+  const mobileInstruction = node('p', 'Tap a value to select it. Open Details for an example.', 'value-instruction value-mobile-label');
   const reveal = node('p', '', 'value-screen-reader');
   reveal.setAttribute('role', 'status');
-  const submit = node('button', removing ? 'Submit 5 to remove' : 'Submit top 15');
+  const submit = node('button', removing ? 'Remove 5' : 'Keep 15');
+  const actions = node('div', '', 'value-actions');
+  actions.append(counter, submit);
   const selected = () => inputs.filter((input) => input.checked).map((input) => input.value);
   function update() {
     const count = selected().length;
@@ -78,13 +81,14 @@ export function valueCards({ history, node, onSubmit }) {
     faces.append(front, back);
 
     const flip = node('button', '', 'value-flip');
+    flip.append(node('span', 'Details', 'value-mobile-label'));
     flip.type = 'button';
     flip.setAttribute('aria-label', `Show definition and example for ${value}`);
     flip.setAttribute('aria-expanded', 'false');
     flip.onclick = () => {
       const showingBack = flip.getAttribute('aria-expanded') === 'true';
       flip.setAttribute('aria-expanded', String(!showingBack));
-      flip.setAttribute('aria-label', showingBack ? `Show definition and example for ${value}` : `Show front of ${value}`);
+      flip.setAttribute('aria-label', showingBack ? `Show definition and example for ${value}` : `Hide definition and example for ${value}`);
       front.setAttribute('aria-hidden', String(!showingBack));
       back.setAttribute('aria-hidden', String(showingBack));
       card.classList.toggle('is-flipped', !showingBack);
@@ -96,8 +100,9 @@ export function valueCards({ history, node, onSubmit }) {
     const input = Object.assign(document.createElement('input'), { type: 'checkbox', value });
     input.setAttribute('aria-label', `${removing ? 'Remove' : 'Keep'} ${value}`);
     input.onchange = update;
-    label.append(input, node('span', removing ? 'Remove this value' : 'Keep this value'));
-    card.append(turningArea, label);
+    label.append(input, node('span', removing ? 'Remove this value' : 'Keep this value', 'value-desktop-label'),
+      node('span', value, 'value-mobile-label'));
+    card.append(label, turningArea);
     grid.append(card);
     return input;
   });
@@ -106,7 +111,7 @@ export function valueCards({ history, node, onSubmit }) {
     const next = nextValues(history, selected());
     if (next) onSubmit(next);
   };
-  form.append(instruction, counter, reveal, grid, submit);
+  form.append(instruction, mobileInstruction, reveal, grid, actions);
   update();
   return form;
 }
