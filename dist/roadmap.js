@@ -87,67 +87,80 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
   }
 
   function renderRoadmap() {
-    const state = read();
-    const road = state.roadmap || {};
-    const container = get('roadmap');
+    const { plan, projectTracker: tracker, roadmap: road } = read();
     const guide = node('section', '', 'route-guide');
-    const heading = node('h1', state.plan?.goal || 'Your roadmap');
+    const heading = node('h1', 'Your roadmap');
     heading.tabIndex = -1;
     const banner = node('div', '', 'roadmap-banner');
     const map = node('img', '', 'roadmap-map');
     map.alt = '';
     map.src = '/roadmap-route.svg';
-    banner.append(node('p', '90-day destination', 'eyebrow'), heading, map);
+    const planHub = node('a', 'Open Plan Hub', 'topic-page-link');
+    planHub.href = viewRoutes.output;
+    planHub.onclick = (event) => {
+      if (event.defaultPrevented || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      go('output');
+    };
+    banner.append(heading, planHub, map);
     guide.append(banner);
-    const link = node('a', 'Open Plan Hub', 'topic-page-link');
-    link.href = viewRoutes.output;
-    const footer = node('div', '', 'roadmap-actions');
-    const calendar = node('img', '', 'roadmap-calendar');
-    calendar.alt = '';
-    calendar.src = '/roadmap-calendar.svg';
-    footer.append(link, calendar);
-    if (!state.plan) {
-      guide.append(node('p', 'Choose a goal in Plan Hub to see your path here.'), footer);
-      container.replaceChildren(guide);
+    if (!plan) {
+      guide.append(node('p', 'Choose a goal in Plan Hub to see your next move and track milestones.'));
+      get('roadmap').replaceChildren(guide);
       return;
     }
-    const tracker = state.projectTracker;
+
     const steps = tracker?.steps || [];
     const active = steps.findIndex(step => !step.done);
     const current = steps[active];
-    const focus = [tracker?.focus || road.skill, tracker?.second].filter(Boolean).join(' · ');
-    if (focus) guide.append(node('p', focus));
+    const complete = steps.length > 0 && !current;
     const next = node('section', '', 'route-next');
-    next.append(node('h2', steps.length && !current ? 'Plan complete' : 'Your next move'),
-      node('p', current?.today || (steps.length ? 'You’ve completed every milestone in this plan.' : state.plan.action)));
-    guide.append(next);
-    if (road.practice && road.practice !== current?.today && road.practice !== state.plan.action)
-      guide.append(node('p', 'Current practice · ' + road.practice));
+    next.append(node('h2', complete ? 'Plan complete' : 'Your next move'),
+      node('p', complete ? 'You’ve completed every milestone in this plan.' : current?.today || current?.action || plan.action));
+    const progressCard = node('section', '', 'route-progress');
+    progressCard.append(node('h2', 'Milestone progress'));
     if (steps.length) {
       const count = steps.filter(step => step.done).length;
       const progress = node('progress');
       progress.max = steps.length;
       progress.value = count;
       progress.setAttribute('aria-label', 'Milestone progress');
-      guide.append(node('p', count + ' of ' + steps.length + ' milestones complete'), progress);
+      progressCard.append(node('p', `${count} of ${steps.length} milestones complete`), progress);
+    } else {
+      progressCard.append(node('p', 'Build your timeline in Plan Hub to track milestones here.'));
+    }
+    const snapshot = node('div', '', 'route-snapshot');
+    snapshot.append(next, progressCard);
+    guide.append(snapshot);
+
+    const focus = [tracker?.focus || road?.skill, tracker?.second].filter(Boolean).join(' · ');
+    const goal = node('details', '', 'page-details route-goal');
+    goal.append(node('summary', '90-day goal and focus'), node('p', plan.goal, 'entry'));
+    if (focus) goal.append(node('p', focus));
+    if (road?.practice && road.practice !== current?.today && road.practice !== plan.action) {
+      goal.append(node('p', 'Current practice · ' + road.practice));
+    }
+    guide.append(goal);
+
+    if (steps.length) {
       const path = node('ol', '', 'route-path');
       steps.forEach((step, index) => {
         const item = node('li');
-        const status = step.done ? 'Complete' : index === active ? 'Current' : 'Ahead';
-        item.className = step.done ? 'finished' : index === active ? 'current' : '';
-        if (index === active) item.setAttribute('aria-current','step');
-        item.append(node('small', 'Days ' + step.days.join('–') + ' · ' + status),
-          node('h3', step.title), node('p', step.action));
+        const status = step.done ? 'Complete' : index === active ? 'Up next' : 'Ahead';
+        if (index === active) item.setAttribute('aria-current', 'step');
+        const details = node('details', '', 'page-details route-milestone');
+        const summary = node('summary');
+        summary.append(node('strong', step.title),
+          node('small', `Days ${step.days.join('–')} · ${status}`));
+        details.append(summary, node('p', step.action, 'entry'));
+        if (step.today && step.today !== step.action) details.append(node('p', 'First action · ' + step.today, 'entry'));
+        if (step.notes) details.append(node('p', 'Notes · ' + step.notes, 'entry'));
+        item.append(details);
         path.append(item);
       });
-      const milestones = node('details', '', 'page-details');
-      milestones.append(node('summary', `All milestones (${steps.length})`), path);
-      guide.append(milestones);
-    } else {
-      guide.append(node('p', 'Build your timeline in Plan Hub to see each milestone here.'));
+      guide.append(node('h2', 'Milestones'), path);
     }
-    guide.append(footer);
-    container.replaceChildren(guide);
+    get('roadmap').replaceChildren(guide);
   }
 
   function planSettings() {

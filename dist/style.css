@@ -476,7 +476,6 @@ main button,.welcome-panel label{min-height:48px}.home-hero .actions{gap:12px}
 
 .project-tracker{padding:clamp(18px,4vw,32px)}.project-tracker progress{width:100%;accent-color:#765195}.project-tracker .milestone{margin:.65rem 0;border:1px solid #ddd3e6;border-left:4px solid #c7b6d9;border-radius:12px;padding:1rem}.project-tracker .milestone[open]{border-left-color:#764695;background:#fcfaff}.project-tracker summary{cursor:pointer;font-weight:650}.project-tracker textarea{width:100%}
 
-.route-guide{max-width:720px;margin:1.5rem auto;padding:clamp(20px,5vw,48px);background:white;border:1px solid #e1daeb;border-radius:20px}.route-guide h1{font-size:clamp(2rem,5vw,3rem);line-height:1.12;margin:.4rem 0}.route-next{margin:1.5rem 0;padding:1rem 1.25rem;background:#f1ebfa;border-radius:12px}.route-next h2,.route-path h3{margin:0}.route-next p,.route-path p{margin:.35rem 0}.route-guide progress{width:100%;accent-color:#755398}.route-path{list-style:none;margin:1.5rem 0;padding:0}.route-path li{position:relative;margin-left:8px;border-left:2px solid #d7cfdf;padding:0 0 1.5rem 1.5rem}.route-path li:last-child{border-color:transparent}.route-path li:before{content:'';position:absolute;left:-8px;top:4px;width:14px;height:14px;border-radius:50%;background:#dad3e3}.route-path .current:before{background:#78499c;box-shadow:0 0 0 4px #ece3f5}.route-path .finished:before{background:#438169}.route-path small{color:#5c5267}
 
 .hub-tools{max-width:790px;margin:0 auto 2rem;display:grid;gap:.65rem}.hub-tool{border:1px solid #ded6eb;border-radius:14px;background:white}.hub-tool>summary{display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;min-height:52px;cursor:pointer;font-weight:650;list-style:none}.hub-tool>summary::-webkit-details-marker{display:none}.hub-tool>summary::after{content:'▸';margin-left:auto;color:#765095}.hub-tool[open]>summary::after{content:'▾'}.hub-tool>summary .hub-symbol{color:#69418e;background:#f1eafb;border-radius:9px;padding:6px}.hub-tool>.hub-panel{margin:0;border:0}.hub-tools>.topic-page-link{justify-self:start}
 
@@ -608,18 +607,6 @@ main :is(.journey-card,.accomplishment-card,.settings-panel)>:last-child { margi
 #home-explore article:nth-child(3n+2), #fun-ideas article:nth-child(3n+2) { background: var(--card-mint); }
 #home-explore article:nth-child(3n), #fun-ideas article:nth-child(3n) { background: var(--card-peach); }
 
-#roadmap .roadmap-banner {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  column-gap: clamp(12px, 3vw, 36px);
-  position: static;
-  margin: calc(-1 * var(--card-padding)) calc(-1 * var(--card-padding)) var(--section-gap);
-  padding: clamp(24px, 5vw, 48px);
-  border-radius: var(--card-radius) var(--card-radius) 0 0;
-  background: linear-gradient(105deg, #291b47, #513570);
-}
-#roadmap .roadmap-banner h1 { color: white; margin: .35rem 0 0; overflow-wrap: anywhere; }
-#roadmap .roadmap-banner .eyebrow { color: #eadcf8; margin: 0; }
 
 #fun > .section-intro {
   color: white;
@@ -632,21 +619,6 @@ main :is(.journey-card,.accomplishment-card,.settings-panel)>:last-child { margi
   #fun > .section-intro { background-position: 68% center; background-image: linear-gradient(90deg,#302040e8,#30204099),url('fun-park.webp'); }
 }
 
-#roadmap .route-guide {
-  --roadmap-inset: clamp(24px, 5vw, 48px);
-  --roadmap-icon: clamp(48px, 9vw, 92px);
-}
-#roadmap .roadmap-banner { padding-inline: var(--roadmap-inset); }
-#roadmap .roadmap-map { grid-column: 2; grid-row: 1 / span 2; align-self: center; width: calc(var(--roadmap-icon) * 1.18); height: auto; }
-#roadmap .roadmap-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  margin-inline: calc(-1 * var(--card-padding));
-  padding-inline: var(--card-padding) var(--roadmap-inset);
-}
-#roadmap .roadmap-calendar { width: var(--roadmap-icon); height: auto; flex: none; margin-inline-end: calc(var(--roadmap-icon) * .09); }
 
 #home .home-hero { margin-bottom: var(--section-gap); }
 .home-links { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; }
@@ -812,4 +784,28 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
   #output .hub-tool > summary { min-height: 48px; padding: 6px 10px; }
   #output .personality-shortcuts .personality-tile { min-height: 44px; }
   #output .personality-shortcuts .hub-symbol { display: none; }
+}
+
+#roadmap .route-guide { --card-padding: clamp(14px, 4vw, 28px); }
+.roadmap-banner {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px;
+  margin-bottom: 14px;
+}
+.roadmap-banner h1 { flex: 1 1 auto; font-size: clamp(1.7rem, 4.8vw, 3rem); line-height: 1.08; }
+.roadmap-banner .topic-page-link { margin: 0; }
+.roadmap-map { width: clamp(42px, 7vw, 74px); height: auto; }
+.route-snapshot { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 10px; }
+.route-next, .route-progress { padding: 12px 14px; border-radius: 12px; background: #f3eef8; }
+.route-progress { background: white; border: 1px solid var(--line); }
+.route-snapshot p { margin: 5px 0; }
+.route-progress progress { display: block; margin-block: 8px 4px; }
+.route-goal { margin-block: 10px 16px; }
+.route-path { display: grid; gap: 6px; list-style: none; padding: 0; margin: 8px 0 0; }
+.route-milestone summary { min-height: 44px; padding-block: 9px; }
+.route-milestone summary small { display: block; margin: 3px 0 0 1em; }
+.route-path [aria-current='step'] .route-milestone { border-color: var(--purple); }
+.route-milestone p { margin: 6px 0; }
+@media (max-width: 600px) {
+  .roadmap-map { display: none; }
+  .route-snapshot { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 }
