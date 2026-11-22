@@ -58,13 +58,12 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
     };
   }
 
-  function page(container, label, title, description) {
+  function page(container, title, description) {
     const heading = node('h1', title);
     heading.tabIndex = -1;
     const intro = node('div', '', 'section-intro');
-    intro.append(node('p', label, 'eyebrow'), heading, node('p', description));
+    intro.append(heading, node('p', description));
     container.replaceChildren(intro);
-    return intro;
   }
 
   function field(form, name, labelText, value, options) {
@@ -238,7 +237,7 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
 
   function renderVault() {
     const container = get('vault');
-    const intro = page(container, 'PRIVATE REFLECTION', 'Privacy vault', 'Keep sensitive observations and questions in a passphrase-protected space on this browser.');
+    page(container, 'Privacy vault', 'Encrypted notes saved in this browser.');
     let record;
     try {
       record = JSON.parse(localStorage.getItem(vaultKey));
@@ -247,7 +246,7 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
       return;
     }
     if (!passphrase) {
-      const form = node('form', '', 'settings-panel');
+      const form = node('form', '', 'settings-panel vault-unlock');
       const label = node('label', record ? 'Vault passphrase' : 'Create a vault passphrase');
       const input = Object.assign(document.createElement('input'), {
         type: 'password', required: true, minLength: record ? 1 : 12,
@@ -257,7 +256,8 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
       const submit = node('button', record ? 'Unlock vault' : 'Create vault');
       const status = node('p', '', 'inline-status');
       status.setAttribute('role', 'status');
-      form.append(label, node('p', 'Use at least 12 characters. A forgotten passphrase can’t be recovered.'), submit, status);
+      form.append(label, submit, status);
+      if (!record) form.append(node('p', 'Use at least 12 characters. A forgotten passphrase can’t be recovered.'));
       form.onsubmit = async (event) => {
         event.preventDefault();
         submit.disabled = true;
@@ -287,11 +287,26 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
       container.append(form);
       return;
     }
-    intro.append(button('Lock vault', () => { lock(); renderVault(); get('vault').querySelector('h1').focus(); }, 'quiet'));
-    const form = node('form', '', 'settings-panel');
+    const actions = node('div', '', 'vault-actions');
+    const form = node('form', '', 'settings-panel vault-note-form');
+    form.id = 'vault-note-form';
+    form.hidden = true;
     const kind = field(form, 'kind', 'Entry type', 'Reflection', [['Reflection', 'Reflection'], ['Observation', 'Observation'], ['Question', 'Question'], ['Experience', 'Experience']]);
     const entry = field(form, 'entry', 'What are you noticing or trying to understand?', '');
     entry.required = true;
+    const add = button('Add a note', () => {
+      form.hidden = !form.hidden;
+      add.setAttribute('aria-expanded', String(!form.hidden));
+      activity();
+      if (!form.hidden) entry.focus();
+    });
+    add.setAttribute('aria-expanded', 'false');
+    add.setAttribute('aria-controls', form.id);
+    actions.append(add, button('Lock vault', () => {
+      lock();
+      renderVault();
+      get('vault').querySelector('h1').focus();
+    }, 'quiet'));
     const submit = node('button', 'Save private entry');
     form.append(submit);
     form.onsubmit = async (event) => {
@@ -314,18 +329,35 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
         notes = next;
         activity();
         renderVault();
+        get('vault').querySelector('#vault-saved-title').focus();
         notify('Private entry saved.');
       } catch {
         notify('The vault could not save this entry.');
         submit.disabled = false;
       }
     };
-    container.append(form);
+    const saved = node('section', '', 'vault-notes');
+    const savedTitle = node('h2', 'Saved notes');
+    savedTitle.id = 'vault-saved-title';
+    savedTitle.tabIndex = -1;
+    saved.append(savedTitle);
+    if (!notes.length) saved.append(node('p', 'Your notes will appear here after you save them.'));
     for (const note of notes) {
-      const item = card(`${note.kind} · ${formatDate(new Date(note.date))}`, note.content);
-      item.append(button('Share this entry', () => openShare(note), 'quiet'));
-      container.append(item);
+      const item = node('details', '', 'page-details vault-note');
+      const summary = node('summary', `${note.kind} · ${formatDate(new Date(note.date))}`);
+      item.append(summary);
+      item.ontoggle = () => {
+        if (!passphrase || !item.isConnected) return;
+        activity();
+        if (item.open) {
+          item.append(node('p', note.content, 'entry'), button('Share this entry', () => openShare(note), 'quiet'));
+        } else {
+          item.replaceChildren(summary);
+        }
+      };
+      saved.append(item);
     }
+    container.append(actions, form, saved);
   }
 
   function openShare(privateNote) {

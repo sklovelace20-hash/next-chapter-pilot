@@ -924,3 +924,18 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
   #fun .fun-body > article { padding: 14px; }
   html:has(#fun:not([hidden])) { scroll-padding-top: 172px; }
 }
+
+#vault .vault-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+#vault :is(.vault-unlock, .vault-note-form) {
+  padding: clamp(14px, 3vw, 24px); margin: 0 0 12px; max-width: 42rem;
+}
+#vault :is(.vault-unlock, .vault-note-form) label { margin-block: 0 12px; }
+#vault .vault-unlock .inline-status:empty { display: none; }
+#vault .vault-notes { display: grid; gap: 8px; max-width: 48rem; }
+#vault .vault-note > summary { min-height: 44px; }
+#vault .vault-note .entry { margin: 0 0 10px; }
+@media (max-width: 600px) {
+  #vault > .section-intro { padding: 12px 14px; margin-bottom: 8px; }
+  #vault > .section-intro h1 { font-size: clamp(1.65rem, 7vw, 2rem); }
+  #vault > .section-intro p { margin-top: 5px; }
+}
