@@ -89,7 +89,15 @@ export async function reflect(request, env) {
         input: assessmentInput, max_output_tokens: mode ? 2100 : 1400, text: { format: { type: 'json_schema', name: 'reflection', strict: true, schema } }
       })
     });
-    if (!response.ok) throw new Error('Provider request failed');
+    if (!response.ok) {
+      const details = await response.json().catch(() => null);
+      const code = details?.error?.code;
+      console.error('OpenAI reflection request failed', {
+        status: response.status,
+        code: typeof code === 'string' && /^[a-z0-9_]{1,64}$/.test(code) ? code : null
+      });
+      return json({ error: 'The AI reflection is unavailable. You can try again or keep editing your profile.' }, 502);
+    }
     const result = await response.json();
     const output = result.output?.flatMap((item) => item.content || []).find((item) => item.type === 'output_text');
     const draft = JSON.parse(output.text);
@@ -97,7 +105,8 @@ export async function reflect(request, env) {
         ![draft.insights, draft.questions].every((list) => Array.isArray(list) && list.every((item) => typeof item === 'string')) ||
         !fields.every((key) => typeof draft.profile?.[key] === 'string')) throw new Error('Invalid draft');
     return json(draft);
-  } catch {
+  } catch (error) {
+    console.error(error?.name === 'TimeoutError' ? 'OpenAI reflection timed out' : 'OpenAI reflection failed during request or response processing');
     return json({ error: 'The AI reflection is unavailable. You can try again or keep editing your profile.' }, 502);
   }
 }
