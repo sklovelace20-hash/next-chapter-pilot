@@ -261,11 +261,12 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     const draft = nextDraft(state);
     const mirror = panel('Make it yours', 'Review your answers and confirm what fits in your own words.');
     const sources = mirrorSources(state);
+    const sourceDetails = [];
     for (const [title, entries] of sources) {
       const detail = node('details', '', 'follow-up');
       detail.append(node('summary', title));
       for (const [question, answer] of entries) detail.append(node('p', question), node('blockquote', answer, 'entry'));
-      mirror.append(detail);
+      sourceDetails.push(detail);
     }
     const form = document.createElement('form');
     const directionLabel = node('label', 'What are you here to explore?');
@@ -276,8 +277,11 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     direction.value = draft.direction || '';
     directionLabel.append(direction);
     form.append(directionLabel);
-    const fields = profileFields.map(([key, title]) => [key, field(form, title, draft[key])]);
-    const clarification = field(form, 'What would you correct, add, or put differently?', draft.clarification);
+    const profileEditor = node('details', '', 'follow-up discover-extra');
+    profileEditor.open = !window.matchMedia('(max-width: 600px)').matches;
+    profileEditor.append(node('summary', 'Edit profile details'));
+    const fields = profileFields.map(([key, title]) => [key, field(profileEditor, title, draft[key])]);
+    const clarification = field(profileEditor, 'What would you correct, add, or put differently?', draft.clarification);
     let pending;
     const reviewDraft = node('details', '', 'follow-up');
     reviewDraft.hidden = true;
@@ -285,7 +289,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     const overview = field(reviewDraft, 'Overview', '');
     const insights = field(reviewDraft, 'Insights · one per line', '');
     const questions = field(reviewDraft, 'Questions · one per line', '');
-    form.append(reviewDraft);
+    profileEditor.append(reviewDraft);
     function confirm(confirmed) {
       if (!Object.values(confirmed).some(Boolean)) return notify('Add something you want to keep.');
       const current = read();
@@ -304,13 +308,14 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
       confirm({ direction: direction.value, ...Object.fromEntries(fields.map(([key, input]) => [key, input.value.trim()])),
         clarification: clarification.value.trim(), ...(acceptedReflection ? { acceptedReflection } : {}) });
     });
+    form.append(profileEditor);
+    mirror.append(form, ...sourceDetails);
     if (draft.acceptedReflection) {
       const saved = node('details', '', 'follow-up');
       saved.append(node('summary', 'Accepted AI reflection'), node('p', draft.acceptedReflection.overview));
       for (const line of [...draft.acceptedReflection.insights, ...draft.acceptedReflection.questions]) saved.append(node('p', line));
       mirror.append(saved);
     }
-    mirror.append(form);
     const profileDraft = (ai) => Object.fromEntries(Object.entries(ai.profile).filter(([key, value]) =>
       profileFields.some(([field]) => field === key) && value.trim()));
     body.append(aiMirror({ sources, node, button,
@@ -319,6 +324,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
       },
       edit(ai) {
         pending = ai;
+        profileEditor.open = true;
         reviewDraft.hidden = false;
         reviewDraft.open = true;
         overview.value = ai.overview;
