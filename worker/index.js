@@ -80,7 +80,7 @@ export async function reflect(request, env) {
       : mode === 'plan-output'
         ? 'Write an overview and up to three specific insights for the requested plan section, grounded in the supplied entries. Generate exactly five distinct, open questions. Include one question about what the person can control or influence. Keep uncertainty explicit and avoid conclusions beyond the evidence.'
         : mode === 'assessment'
-          ? 'Summarize the supplied report in plain language. Identify outcomes, strengths, gaps, or practical observations relevant to future questions and planning. Attribute results to the report and distinguish scores from interpretations. Do not reproduce lengthy text, reveal personal identifiers, diagnose, or treat the assessment as fact. Highlight two or three observations that can be checked in ordinary life.'
+          ? 'Summarize the supplied report in plain language. Identify outcomes, strengths, gaps, or practical observations relevant to future questions and planning. Attribute results to the report and distinguish scores from interpretations. Do not reproduce lengthy text, reveal personal identifiers, diagnose, or treat the assessment as fact. Highlight two or three observations that can be checked in ordinary life. Read dates, durations, frequencies, cues, and measured outcomes from the report, including small print in images. Include the exact session duration and its timing or cue in overview whenever the report supplies them. Also put the documented routine, including its exact duration and cue, in profile.tryNext as a short factual phrase. For this report-summary task, profile.tryNext records what the report actually says. Leave it empty if the report gives no routine, and never invent missing numbers.'
           : mode === 'plan-tailoring'
             ? 'Use the accepted assessment summary as one input and the user’s goal as the priority. Suggest one controllable weekly action in profile.tryNext and one skill in profile.skill. For a Roadmap next move, preserve the purpose of the milestone. If the accepted report describes a routine that worked or one the person prefers for this goal, use its specific duration, time, and cue in profile.tryNext. Use the report’s exact conditions unless the stated goal or an explicit constraint requires otherwise. In your overview, briefly explain the connection and offer a concrete indication of progress. Do not replace or invent goals.'
             : '';
@@ -89,7 +89,7 @@ export async function reflect(request, env) {
     { type: 'input_text', text: input },
     document.mime === 'application/pdf'
       ? { type: 'input_file', filename: 'assessment.pdf', file_data: `data:${document.mime};base64,${document.data}` }
-      : { type: 'input_image', detail: 'auto', image_url: `data:${document.mime};base64,${document.data}` }
+      : { type: 'input_image', detail: 'high', image_url: `data:${document.mime};base64,${document.data}` }
   ] }] : input;
   try {
     const response = await fetch('https://api.openai.com/v1/responses', {
@@ -116,6 +116,13 @@ export async function reflect(request, env) {
     if (typeof draft.overview !== 'string' || !draft.overview.trim() ||
         ![draft.insights, draft.questions].every((list) => Array.isArray(list) && list.every((item) => typeof item === 'string')) ||
         !fields.every((key) => typeof draft.profile?.[key] === 'string')) throw new Error('Invalid draft');
+    if (mode === 'assessment') {
+      const routine = draft.profile.tryNext.trim();
+      const summary = [draft.overview, ...draft.insights].join(' ').toLowerCase();
+      if (routine && !summary.includes(routine.toLowerCase().replace(/[.!?]$/, ''))) {
+        draft.insights.push('Reported routine · ' + routine);
+      }
+    }
     return json(draft);
   } catch (error) {
     console.error(error?.name === 'TimeoutError' ? 'OpenAI reflection timed out' : 'OpenAI reflection failed during request or response processing');
