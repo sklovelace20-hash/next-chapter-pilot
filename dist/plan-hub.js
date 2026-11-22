@@ -48,7 +48,7 @@ export function hubEvidence(state, section) {
   const selected = state.planValues?.selected || d.valueRounds?.[2] || [];
   const valueMeanings = state.planValues?.meanings || d.valueMeaning || {};
   const skills = [...new Set([r.skill, confirmed.skill, ...targets.map((target) => target.skill)].filter(Boolean))];
-  const tasks = state.plan ? taskList(state.plan, targets) : [];
+  const tasks = state.plan ? taskList(state.plan, targets, state.roadmap, confirmed) : [];
   const reviews = state.reviews || [];
   const common = [['Current priority', confirmed.priority], ['What I want to try', confirmed.tryNext]];
   const evidence = {

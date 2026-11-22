@@ -3,6 +3,7 @@ import { profileFields } from './growth.js';
 import { planQuestions, personalityEvidence } from './deeper.js';
 import { seal, unseal } from './vault-crypto.js';
 import { requestInsight } from './assessment.js';
+import { timelineFor, withTimeline } from './project-tracker.js';
 
 export const vaultKey = 'next-chapter-encrypted-vault-v1';
 export const cadenceOptions = [[3, 'Every 3 days'], [7, 'Weekly'], [14, 'Every 2 weeks'], [30, 'Monthly']];
@@ -88,7 +89,8 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
 
   function renderRoadmap() {
     const state = read();
-    const { plan, projectTracker: tracker, roadmap: road } = state;
+    const { plan, roadmap: road } = state;
+    const tracker = timelineFor(state);
     const guide = node('section', '', 'route-guide');
     const heading = node('h1', 'Your roadmap');
     heading.tabIndex = -1;
@@ -115,9 +117,26 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
     const active = steps.findIndex(step => !step.done);
     const current = steps[active];
     const complete = steps.length > 0 && !current;
+    const saveStep = (index, patch) => {
+      const latest = read();
+      if (latest !== state) {
+        notify('The plan has changed. Review the current milestones and try again.');
+        renderRoadmap();
+        return false;
+      }
+      const updated = { ...tracker, steps: steps.map((step, position) => position === index ? { ...step, ...patch } : step) };
+      if (!save(withTimeline(latest, updated))) return false;
+      renderRoadmap();
+      get('roadmap').querySelector('h1').focus();
+      return true;
+    };
     const next = node('section', '', 'route-next');
     next.append(node('h2', complete ? 'Plan complete' : 'Your next move'),
       node('p', complete ? 'You’ve completed every milestone in this plan.' : current?.today || current?.action || plan.action));
+    if (current?.evidence) next.append(node('p', 'Track · ' + current.evidence));
+    if (current) next.append(button('Mark milestone complete', () => {
+      if (saveStep(active, { done: true })) notify('Milestone complete. Your next move is ready.');
+    }));
     const progressCard = node('section', '', 'route-progress');
     progressCard.append(node('h2', 'Milestone progress'));
     if (steps.length) {
@@ -158,27 +177,15 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
         try {
           const result = await requestInsight({ mode: 'plan-tailoring', input: JSON.stringify({
             acceptedAssessment: assessmentSummary,
-            target: { goal: plan.goal, currentAction: current?.today || plan.action,
-              milestone: current?.title, exercise: current?.action, focus }
+            target: { goal: current?.goal || plan.goal, currentAction: current?.today || plan.action,
+              milestone: current?.title, exercise: current?.action, focus: current?.skill || focus }
           }) });
           const proposed = result.profile.tryNext.trim();
           if (!proposed) { status.textContent = 'The report did not support a specific next move.'; return; }
           status.textContent = '';
           suggestion.append(node('p', result.overview), node('p', proposed, 'entry'),
             button('Use this next move', () => {
-              const latest = read();
-              if (latest.plan !== plan || latest.projectTracker !== tracker || latest.assessment?.summary !== assessmentSummary) {
-                status.textContent = 'The plan or report summary has changed. Reopen Roadmap and generate a fresh suggestion.';
-                return;
-              }
-              const updates = current
-                ? { projectTracker: { ...tracker, steps: steps.map((step, index) => index === active ? { ...step, today: proposed } : step) } }
-                : { plan: { ...plan, action: proposed } };
-              if (save({ ...latest, ...updates })) {
-                renderRoadmap();
-                get('roadmap').querySelector('h1').focus();
-                notify('Your next move was updated.');
-              }
+              if (saveStep(active, { today: proposed })) notify('Your next move was updated.');
             }));
         } catch (error) {
           status.textContent = error.message;
@@ -192,6 +199,7 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
 
     if (steps.length) {
       const path = node('ol', '', 'route-path');
+      const multipleGoals = new Set(steps.map(step => step.goal).filter(Boolean)).size > 1;
       steps.forEach((step, index) => {
         const item = node('li');
         const status = step.done ? 'Complete' : index === active ? 'Up next' : 'Ahead';
@@ -200,9 +208,15 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
         const summary = node('summary');
         summary.append(node('strong', step.title),
           node('small', `Days ${step.days.join('–')} · ${status}`));
+        if (multipleGoals && step.goal) summary.append(node('small', step.goal));
         details.append(summary, node('p', step.action, 'entry'));
+        if (step.skill) details.append(node('p', 'Skill to practice · ' + step.skill));
+        if (step.evidence) details.append(node('p', 'Evidence to look for · ' + step.evidence));
         if (step.today && step.today !== step.action) details.append(node('p', 'First action · ' + step.today, 'entry'));
         if (step.notes) details.append(node('p', 'Notes · ' + step.notes, 'entry'));
+        if (step.done) details.append(button('Reopen milestone', () => {
+          if (saveStep(index, { done: false })) notify('Milestone reopened.');
+        }, 'quiet'));
         item.append(details);
         path.append(item);
       });

@@ -1,24 +1,39 @@
-const periods = [[1,7],[8,14],[15,21],[22,30],[31,60],[61,90]];
+import { taskList } from './journey-content.js';
+import { practiceFor } from './growth.js';
 
-export function makeSteps(plan, focus, second) {
-  const career = /promot|leadership|leader visibility/i.test([plan.goal,focus,second].join(' '));
-  const skill = focus || 'my chosen skill';
-  const steps = career ? [
-    ['Make two introductions', 'Introduce yourself to two leaders. Ask each what their team is working on.', 'Send one leader a short introduction and ask for ten minutes.'],
-    ['Put one idea in front of a peer', 'Give one peer a three-minute pitch. Ask what was clear and where you lost them.', 'Choose one idea and invite one teammate to hear it.'],
-    ['Check and adjust', 'Review both introductions and the peer feedback. Name one thing that helped, one blocker, and one change for next week.', 'Reread your notes and write the one change you want to test.'],
-    ['Try the revised pitch', 'Present one revised idea to a teammate or friend. Ask them to repeat your main point back to you.', 'Book a ten-minute practice run with one person.'],
-    ['Collaborate across teams', 'Invite one cross-functional partner to shape a small proposal. Present it together at one leadership group meeting.', 'Ask one partner which shared problem would be worth solving.'],
-    ['Make the case', 'Bring two examples of impact and one piece of feedback to a promotion-readiness conversation with your manager.', 'Pick the two examples that best show your growth.']
-  ] : [
-    ['Try one small action', plan.action || 'Try one ten-minute practice session for ' + skill + '.', 'Put one ten-minute practice session on today’s calendar.'],
-    ['Get one outside perspective', 'Show one person what you tried. Ask for one specific improvement.', 'Invite one person to give feedback.'],
-    ['Check and adjust', 'Compare your first attempt with the feedback. Identify one blocker and choose one adjustment.', 'Write down the change you most want to test.'],
-    ['Test the change', 'Repeat your exercise once with the adjustment. Record what changed.', 'Choose a time and place for the next attempt.'],
-    ['Practice in a new setting', 'Try the skill with one new person or in a different setting. Collect one example of progress.', 'Pick the setting where this skill matters most.'],
-    ['Review the evidence', 'Compare your starting point with two examples of progress. Decide what to carry forward.', 'Choose the two examples you want to keep.']
-  ];
-  return steps.map(([title,action,today],i)=>({title,action,today,days:periods[i],done:false}));
+export function timelineFor(state) {
+  const { plan, projectTracker: stored } = state;
+  if (!plan || (stored && stored.source !== 'plan' && stored.steps?.length)) return stored;
+  const prior = new Map((stored?.steps || []).map(step => [step.id, step]));
+  const steps = taskList(plan, state.planTargets || [], state.roadmap, state.growth?.confirmed).map(task => {
+    const previous = prior.get(task.id);
+    const sameGoal = previous?.goal === task.goal;
+    const generated = { action: task.detail, today: task.firstAction };
+    return {
+      id: task.id, title: task.title, days: task.days, goal: task.goal, skill: task.skill, evidence: task.evidence,
+      action: sameGoal && previous.generated?.action === generated.action ? previous.action : generated.action,
+      today: sameGoal && previous.generated?.today === generated.today ? previous.today : generated.today,
+      generated,
+      done: Boolean((!previous || sameGoal) && (state.completedActivities?.[task.id] ?? previous?.done)),
+      notes: (!previous || sameGoal) ? (state.activityNotes?.[task.id] ?? previous?.notes ?? '') : ''
+    };
+  }).sort((a, b) => a.days[0] - b.days[0]);
+  return {
+    ...stored, source: 'plan', started: stored?.started || state.started,
+    focus: state.roadmap?.skill || state.planTargets?.[0]?.skill || state.growth?.confirmed?.skill || '',
+    second: state.planTargets?.[1]?.skill || state.roadmap?.secondSkill || stored?.second || '', steps
+  };
+}
+
+export function withTimeline(state, tracker) {
+  if (tracker.source !== 'plan') return { ...state, projectTracker: tracker };
+  const completedActivities = { ...state.completedActivities };
+  const activityNotes = { ...state.activityNotes };
+  for (const step of tracker.steps) {
+    completedActivities[step.id] = step.done;
+    activityNotes[step.id] = step.notes;
+  }
+  return { ...state, projectTracker: tracker, completedActivities, activityNotes };
 }
 
 export function projectTracker({read,save,node,button,notify,aiDraft}) {
@@ -32,7 +47,7 @@ export function projectTracker({read,save,node,button,notify,aiDraft}) {
     wrap.append(input); parent.append(wrap); return input;
   }
   function render() {
-    const state=read(), plan=state.plan || {}, tracker=state.projectTracker;
+    const state=read(), plan=state.plan || {}, tracker=timelineFor(state);
     root.replaceChildren(node('h2','My 90-day plan'));
     if (!tracker) {
       const setup=node('section');
@@ -49,16 +64,17 @@ export function projectTracker({read,save,node,button,notify,aiDraft}) {
         e.preventDefault();
         if (!goal.value.trim() || !focus.value.trim()) return notify('Add an outcome and one focus.');
         const current=read(), goalText=goal.value.trim(), skill=focus.value.trim();
-        const steps=makeSteps({goal:goalText,action:first.value.trim()},skill,second.value.trim());
-        if(first.value.trim()) steps[0].action=first.value.trim();
-        const nextPlan={action:steps[0].action,tracker:'One concrete example of progress',prompt:'What changed after you tried it?',...current.plan,goal:goalText};
-        const started=current.started || new Date().toISOString();
-        if(save({...current,started,plan:nextPlan,projectTracker:{focus:skill,second:second.value.trim(),started,steps}})) render();
+        const nextPlan = { goal: goalText, action: first.value.trim() || practiceFor(skill).practice,
+          tracker: 'One concrete example of progress', prompt: 'What changed after you tried it?' };
+        const started = current.started || new Date().toISOString();
+        const next = { ...current, started, plan: nextPlan,
+          roadmap: { ...current.roadmap, skill, secondSkill: second.value.trim() } };
+        if (save(withTimeline(next, timelineFor(next)))) render();
       };
       return;
     }
     const display=()=>{render();root.querySelector('h2').tabIndex=-1;root.querySelector('h2').focus();};
-    const put=(patch)=>{const s=read();return save({...s,projectTracker:{...s.projectTracker,...patch}});};
+    const put=(patch)=>{const s=read();return save(withTimeline(s, { ...timelineFor(s), ...patch }));};
     root.append(node('h3',plan.goal),node('p',[tracker.focus,tracker.second].filter(Boolean).join(' · ')));
     const current=tracker.steps.findIndex(s=>!s.done);
     const progress=node('progress');progress.max=tracker.steps.length;progress.value=tracker.steps.filter(s=>s.done).length;
@@ -70,6 +86,7 @@ export function projectTracker({read,save,node,button,notify,aiDraft}) {
       const card=fold((step.done?'✓ ':i===current?'Up next · ':'')+when+' · '+step.title);
       card.classList.add('milestone');card.open=i===current;
       card.append(node('p',step.action),node('strong','What I can do today'),node('p',step.today));
+      if (step.evidence) card.append(node('p', 'Evidence to look for · ' + step.evidence));
       const edit=fold('Capture feedback or adjust this exercise');
       const form=node('form'), action=field(form,'The exercise',step.action,true), today=field(form,'One action I control today',step.today,true);
       const notes=field(form,'What happened? Capture feedback, ideas, or anything that got in the way.',step.notes);
@@ -91,7 +108,7 @@ export function projectTracker({read,save,node,button,notify,aiDraft}) {
       complete.type='button';card.append(complete);
       function update(toggle){
         if(![action,today,...(next?[adjustment,nextToday]:[])].every(f=>f.value.trim()))return notify('Give each exercise and first action a short description.');
-        const steps=read().projectTracker.steps.map((s,j)=>j===i?{...s,action:action.value.trim(),today:today.value.trim(),notes:notes.value.trim(),done:toggle?!s.done:s.done}:next && j===i+1?{...s,action:adjustment.value.trim(),today:nextToday.value.trim()}:s);
+        const steps=timelineFor(read()).steps.map((s,j)=>j===i?{...s,action:action.value.trim(),today:today.value.trim(),notes:notes.value.trim(),done:toggle?!s.done:s.done}:next && j===i+1?{...s,action:adjustment.value.trim(),today:nextToday.value.trim()}:s);
         if(put({steps})){display();notify(toggle?'Milestone updated.':'Changes saved.');}
       }
       form.onsubmit=e=>{e.preventDefault();update(false);};complete.onclick=()=>update(true);

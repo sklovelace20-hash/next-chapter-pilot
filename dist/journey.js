@@ -1,6 +1,7 @@
 import { valueCards } from './value-cards.js';
 import { traits, profile } from './discovery-content.js';
 import { areas, rounds, ideaQuestions, deeperIdeaQuestions, taskList } from './journey-content.js';
+import { timelineFor } from './project-tracker.js';
 
 const quiz = traits.flatMap((trait, axis) => trait.questions.map((parts, index) => [`${axis}-${index}`, ...parts]));
 
@@ -357,7 +358,10 @@ export function planActivities({ read, node, save }) {
   const card = node('article', '');
   card.append(node('h2', '90-day activities'));
   let goal;
-  for (const task of taskList(state.plan, state.planTargets || [])) {
+  const timeline = timelineFor(state);
+  const milestones = new Map(timeline?.source === 'plan' ? timeline.steps.map(step => [step.id, step]) : []);
+  for (const task of taskList(state.plan, state.planTargets || [], state.roadmap, state.growth?.confirmed)) {
+    const milestone = milestones.get(task.id);
     if (task.goal !== goal) {
       goal = task.goal;
       card.append(node('h3', goal));
@@ -369,7 +373,10 @@ export function planActivities({ read, node, save }) {
       if (!save({ ...current, completedActivities: { ...current.completedActivities, [task.id]: checkbox.checked } })) checkbox.checked = !checkbox.checked;
     };
     label.append(checkbox, document.createTextNode(` ${task.timing} · ${task.title}`));
-    card.append(label, node('p', task.detail));
+    const activity = milestone?.action || task.detail;
+    card.append(label, node('p', activity));
+    if (milestone?.today && milestone.today !== activity) card.append(node('p', 'First action · ' + milestone.today));
+    card.append(node('p', 'Evidence to look for · ' + task.evidence));
     const journal = node('details', '', 'follow-up');
     journal.append(node('summary', 'Record what you learned'));
     const form = node('form', '');

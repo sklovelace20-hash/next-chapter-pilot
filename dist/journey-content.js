@@ -51,15 +51,32 @@ export const deeperIdeaQuestions = [
   'What feels like the smallest useful commitment you can make this week?'
 ];
 
-export function taskList(plan, targets) {
-  const focuses = targets.length ? targets : [{ goal: plan.goal, action: plan.action }];
+export function taskList(plan, targets, roadmap = {}, confirmed = {}) {
+  const primary = targets[0] || {};
+  const focuses = [{ ...primary, goal: plan.goal, action: roadmap?.practice || plan.action || primary.action,
+    skill: roadmap?.skill || primary.skill || confirmed?.skill,
+    proof: roadmap?.evidence || plan.tracker || primary.proof }, ...targets.slice(1)];
   return focuses.flatMap(({ goal, action, skill, proof }, index) => {
     const practice = practiceFor(skill || '');
+    const attempt = action || (index === 0 ? confirmed?.tryNext : '') || practice?.practice ||
+      'Choose and try one small step toward “' + goal + '.”';
+    const evidence = proof || 'Record what you tried and one observable result.';
+    const stretch = (index === 0 ? roadmap?.experience : '') ||
+      (skill ? 'Use ' + skill + ' in a real situation tied to “' + goal + '.” Ask for specific feedback.'
+        : 'Try what you practiced in a real situation tied to “' + goal + '.” Ask for specific feedback.');
+    const secondary = index === 0 && roadmap?.secondSkill;
     return [
-    ['Define a baseline', 'Days 1–7', `Describe where you are today relative to “${goal}.” ${proof ? `Track this evidence: ${proof}` : 'Choose one observable measure.'}`],
-    ['Practice the skill', 'Days 8–30', action || practice?.practice || `Choose and repeat a small step toward “${goal}.”`],
-    ['Try it in a real situation', 'Days 31–60', `Use what you practiced in a real situation tied to “${goal}.” Ask for specific feedback.`],
-    ['Reflect and adjust', 'Days 61–90', plan.prompt]
-    ].map(([title, timing, detail], task) => ({ id: `${index}-${task}`, title, timing, detail, goal }));
+      ['Start and record a baseline', [1, 7], attempt, attempt, 'Before or during your first try, record a starting point. ' + evidence],
+      ['Build a repeatable practice', [8, 30], 'Repeat your chosen activity and adjust one thing after each attempt. ' + attempt,
+        attempt, evidence],
+      ['Try it in a real situation', [31, 60], stretch,
+        secondary ? stretch + ' Look for a chance to use ' + secondary + ' as well.' : stretch,
+        evidence],
+      ['Review and choose what to keep', [61, 90],
+        'Compare your latest evidence with your baseline. Decide what to continue or adjust for “' + goal + '.”',
+        plan.prompt || 'Review what changed and choose what to try next.', evidence]
+    ].map(([title, days, detail, firstAction, evidence], phase) => ({
+      id: `${index}-${phase}`, title, days, timing: `Days ${days.join('–')}`, detail, firstAction, goal, skill, evidence
+    }));
   });
 }

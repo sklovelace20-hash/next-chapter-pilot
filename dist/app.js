@@ -330,10 +330,13 @@ get('plan').addEventListener('submit', (event) => {
   if (!validate(event.currentTarget, plan)) return;
   const targets = editingJourneyPlan ? state.journey.targets : state.planTargets;
   const planTargets = targets?.map((target, index) => index ? target : { ...target, goal: plan.goal, action: plan.action, proof: plan.tracker });
-  const roadmap = editingJourneyPlan ? { ...state.roadmap, skill: planTargets?.[0]?.skill || '', evidence: plan.tracker, practice: plan.action } : state.roadmap;
+  const roadmap = { ...state.roadmap };
+  if (editingJourneyPlan) roadmap.skill = planTargets?.[0]?.skill || '';
+  if (editingJourneyPlan || !roadmap.practice || roadmap.practice === state.plan?.action) roadmap.practice = plan.action;
+  if (editingJourneyPlan || !roadmap.evidence || roadmap.evidence === state.plan?.tracker) roadmap.evidence = plan.tracker;
   const progress = editingJourneyPlan ? { completedActivities: {}, activityNotes: {}, projectTracker: null } : {};
   if (save({ ...state, ...progress, plan, planTargets, roadmap, started: editingJourneyPlan ? new Date().toISOString() : state.started || new Date().toISOString() })) {
-    if (editingJourneyPlan) tools.go('output');
+    if (editingJourneyPlan) tools.go('roadmap');
     else dashboard();
     notify('Plan saved.');
   }
