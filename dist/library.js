@@ -41,7 +41,39 @@ const resourceKey = (value) => {
   return url.hostname.replace(/^www\./, '') + url.pathname.replace(/\/$/, '') + url.hash;
 };
 
+const authorBooks = [
+  ['Brené Brown', [
+    ['Strong Ground', 'https://brenebrown.com/book/strong-ground/'],
+    ['Atlas of the Heart', 'https://brenebrown.com/book/atlas-of-the-heart/'],
+    ['Dare to Lead', 'https://brenebrown.com/book/dare-to-lead/'],
+    ['You Are Your Best Thing', 'https://brenebrown.com/book/you-are-your-best-thing/', 'Co-edited with Tarana Burke'],
+    ['The Gifts of Imperfection', 'https://brenebrown.com/book/the-gifts-of-imperfection/'],
+    ['Braving the Wilderness', 'https://brenebrown.com/book/braving-the-wilderness/'],
+    ['Rising Strong', 'https://brenebrown.com/book/rising-strong/'],
+    ['Daring Greatly', 'https://brenebrown.com/book/daring-greatly/'],
+    ['I Thought It Was Just Me (But It Isn’t)', 'https://brenebrown.com/book/i-thought-it-was-just-me/'],
+    ['The Power of Vulnerability', 'https://www.soundstrue.com/products/the-power-of-vulnerability', 'Audio program'],
+    ['Rising Strong as a Spiritual Practice', 'https://www.soundstrue.com/products/rising-strong-as-a-spiritual-practice', 'Audio program']
+  ]],
+  ['Adam Grant', [
+    ['Vibe', 'https://adamgrant.net/book/vibe/'],
+    ['Hidden Potential', 'https://adamgrant.net/book/hidden-potential/'],
+    ['Think Again', 'https://adamgrant.net/book/think-again/'],
+    ['Originals', 'https://adamgrant.net/book/originals/'],
+    ['Give and Take', 'https://adamgrant.net/book/give-and-take/'],
+    ['Option B', 'https://adamgrant.net/book/option-b/', 'With Sheryl Sandberg'],
+    ['Leif and the Fall', 'https://www.penguinrandomhouse.com/books/610621/leif-and-the-fall-by-allison-sweet-grant-and-adam-grant-illustrated-by-merrilee-liddiard/', 'With Allison Sweet Grant'],
+    ['The Gift Inside the Box', 'https://www.penguinrandomhouse.com/books/610620/the-gift-inside-the-box-by-adam-grant-and-allison-sweet-grant-illustrated-by-diana-schoenbrun/', 'With Allison Sweet Grant'],
+    ['Power Moves', 'https://www.audible.com/pd/Power-Moves-Audiobook/B07H4XVBBW', 'Audio original']
+  ]]
+];
+const bookCollections = new Map(authorBooks.flatMap(([author, books]) =>
+  books.map(([, url]) => [resourceKey(url), author])));
+const catalogBooks = authorBooks.flatMap(([by, books]) => books.map(([title, url, description]) =>
+  ({ format: 'Book', theme: 'Purpose', title, by, url, description })));
+
 export const libraryResources = [...new Map([
+  ...catalogBooks,
   ...middleTheoryResources,
   ...nextChapterResources.map(([category, title, by, url, description, prompt], index) =>
     ({ format: formats[category], theme: themes[index], title, by, url, description, prompt }))
@@ -71,21 +103,49 @@ export function library({ host, node, button }) {
   let active = 'All';
 
 
-  function externalLink(label, url) {
-    const link = node('a', label);
-    link.href = url;
+  function openSeparately(link) {
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
     return link;
   }
 
-  function resourceCard(resource) {
-    const { theme, title, by, url, description, prompt } = resource;
-    const card = node('article', '', 'library-resource');
-    const heading = node('h3', '');
-    heading.append(externalLink(title, url));
-    const detail = node('details', '', 'follow-up');
-    detail.append(node('summary', 'About this resource'), node('p', description), node('p', prompt));
-    card.append(heading, node('p', [by, theme].filter(Boolean).join(' · '), 'library-credit'), detail);
+  function externalLink(label, url) {
+    const link = node('a', label);
+    link.href = url;
+    return openSeparately(link);
+  }
+
+  function resourceCard(title, caption, resources) {
+    const card = node('details', '', 'library-resource');
+    const summary = node('summary', '', 'resource-summary');
+    summary.append(node('strong', title), node('span', caption, 'library-credit'));
+    const list = node('ul', '', 'resource-items');
+    for (const resource of resources) {
+      const item = node('li', '');
+      item.append(externalLink(resource.title, resource.url));
+      if (resource.description) item.append(node('p', resource.description));
+      if (resource.prompt) item.append(node('p', resource.prompt));
+      list.append(item);
+    }
+    card.append(summary, list);
     return card;
+  }
+
+  function resourceCards(items) {
+    const collections = new Map();
+    const cards = [];
+    for (const item of items) {
+      const author = bookCollections.get(resourceKey(item.url));
+      if (author) {
+        if (!collections.has(author)) collections.set(author, []);
+        collections.get(author).push(item);
+      } else {
+        const caption = [item.by, item.theme].filter(Boolean).join(' · ');
+        cards.push(resourceCard(item.title, caption, [item]));
+      }
+    }
+    return [...Array.from(collections, ([author, books]) =>
+      resourceCard(author + ' books', books.length + (books.length === 1 ? ' title' : ' titles'), books)), ...cards];
   }
 
   function collection(title, items) {
@@ -107,11 +167,11 @@ export function library({ host, node, button }) {
 
   function render() {
     const intro = node('div', '', 'section-intro topic-intro topic-learning library-intro');
-    const heading = node('h1', 'Library');
+    const heading = node('h1', 'Resources');
     heading.tabIndex = -1;
     intro.append(heading, node('p', 'Find books, listening, and practical tools.'));
     const nav = node('nav', '', 'library-sections');
-    nav.setAttribute('aria-label', 'Library sections');
+    nav.setAttribute('aria-label', 'Resource sections');
     const sectionButtons = sections.map(([title, formats]) => {
       const control = button(title, () => {
         selectSection(title, formats);
@@ -188,7 +248,7 @@ export function library({ host, node, button }) {
         const category = node('section', '', 'learning-category');
         category.append(node('h2', formatName + ' (' + items.length + ')'));
         const topics = node('div', '', 'learning-topics');
-        topics.append(...items.map(resourceCard));
+        topics.append(...resourceCards(items));
         category.append(topics);
         return category;
       }));
@@ -222,6 +282,7 @@ export function library({ host, node, button }) {
       collection('Four practices to try', middleTheoryPractices),
       everydayTools({ guide: 'living', node, button, excludeResourceUrls: new Set(libraryResources.map(({ url }) => resourceKey(url))) }),
       everydayTools({ guide: 'growing', node, button }));
+    for (const link of guides.querySelectorAll('a')) openSeparately(link);
     resources.append(controls, count, grid);
     host.replaceChildren(intro, nav, resources, guides);
     const selected = sections.find(([title]) => title === active);

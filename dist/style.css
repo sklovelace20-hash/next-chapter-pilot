@@ -679,10 +679,6 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
 .page-details > summary { padding-block: 13px; cursor: pointer; font-weight: 680; }
 .page-details[open] { padding-bottom: 14px; }
 #fun-ideas { align-items: start; }
-.library-resource { padding-block: 12px; }
-.library-resource h3 { margin: 0; font-size: 1rem; }
-.library-resource .library-credit { margin: 3px 0 0; }
-.library-resource .follow-up { margin-bottom: 0; }
 .learning-category > h2 { padding: 10px 12px; }
 
 #library .learning-browser { grid-template-columns: minmax(0, 1fr); }
@@ -834,8 +830,6 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
 #library .library-filter-fields .library-featured { grid-column: 1; }
 #library .library-filter-fields > button { justify-self: end; }
 #library .library-count { margin: 8px 0; }
-#library .library-resource > details { margin-top: 8px; padding: 0 8px; }
-#library .library-resource summary { padding: 9px 0; min-height: 44px; font-size: .9rem; }
 #library .everyday-library-intro { padding: 14px; background: #f3eef8; }
 #library .everyday-library-intro h2 { color: var(--ink); }
 @media (max-width: 600px) {
@@ -849,5 +843,29 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
   }
   #library .library-sections :is(button, a) { font-size: .82rem; }
   html:has(#library:not([hidden])) { scroll-padding-top: 220px; }
-  #library .library-resource { padding: 10px; }
+}
+
+#library .library-resource {
+  align-self: stretch; min-inline-size: 0; min-block-size: 9rem;
+  padding: 0; overflow-wrap: anywhere;
+}
+#library .resource-summary {
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 5px; min-block-size: 9rem; padding: 14px 36px 14px 14px;
+  position: relative; cursor: pointer; list-style: none;
+}
+#library .resource-summary::-webkit-details-marker { display: none; }
+#library .resource-summary::after {
+  content: ''; position: absolute; top: calc(50% - 4px); right: 15px;
+  border: solid var(--purple); border-width: 0 2px 2px 0; padding: 3px;
+  transform: rotate(45deg);
+}
+#library .library-resource[open] .resource-summary::after { transform: rotate(225deg); }
+#library .learning-topics:has(.library-resource[open]) > .library-resource { align-self: start; }
+#library .resource-items { margin: 0 14px 14px; padding: 0; list-style: none; }
+#library .resource-items li { padding: 10px 0; border-top: 1px solid var(--line); }
+#library .resource-items a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 650; }
+#library .resource-items p { margin: 3px 0 0; }
+@media (max-width: 600px) {
+  #library .library-resource, #library .resource-summary { min-block-size: 6.5rem; }
 }

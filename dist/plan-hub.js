@@ -199,7 +199,7 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
         shortcuts.append(shortcut);
       }
       const rows = node('div', '', 'personality-options');
-      rows.append(assessment(), pageLink('Browse the Library', viewRoutes.library, 'topic-page-link'));
+      rows.append(assessment(), pageLink('Browse resources', viewRoutes.library, 'topic-page-link'));
       panel.append(shortcuts, rows);
     }
     if (key === 'reflection') {
@@ -208,7 +208,7 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
     }
     if (key === 'skills') panel.append(everydayTools({ guide: 'skills', node, button, addPractice: state.plan ? addPractice : undefined }));
     if (key === 'learning') {
-      primary.append(pageLink('Open the Library', viewRoutes.library, 'topic-page-link'));
+      primary.append(pageLink('Open Resources', viewRoutes.library, 'topic-page-link'));
       const resources = disclosure(node, 'Learning ideas and resources');
       resources.append(learningCards({ node, skills, practiceFor }));
       panel.append(resources);
@@ -226,7 +226,7 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
         node('p', 'Connection: Ask someone you miss to take a ten-minute walk.'),
         node('p', 'Play: Put on one song and shoot baskets, dance, or sketch until it ends.'),
         node('p', 'Confidence: Ask one question you’d usually keep to yourself. Notice what happens.'),
-        pageLink('Browse the resource library', viewRoutes.library, 'topic-page-link'));
+        pageLink('Browse resources', viewRoutes.library, 'topic-page-link'));
       const write = node('section', '', 'hub-activity-journal');
       write.append(node('h2', 'Reflect on an activity'));
       const journal = node('form');
