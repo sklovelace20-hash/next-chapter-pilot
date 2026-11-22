@@ -21,11 +21,12 @@ function dateLabel(date) {
 
 export function accomplishments({ host, read, save, node, button, notify }) {
   let editing;
-  let activeYear = yearOf(localDate(new Date()));
+  let activeYear;
   function listing({ all = false } = {}) {
     const groups = accomplishmentsByYear(read().accomplishments);
     const list = node('div', '');
-    const groupList = all ? [...groups] : [[activeYear, groups.get(activeYear) || []]];
+    const year = activeYear || groups.keys().next().value || yearOf(localDate(new Date()));
+    const groupList = all ? [...groups] : [[year, groups.get(year) || []]];
     if (!groupList.length || !groupList.some(([, entries]) => entries.length)) {
       list.append(node('p', 'Your first win can be small. What made you smile this year?'));
       return list;
@@ -64,16 +65,18 @@ export function accomplishments({ host, read, save, node, button, notify }) {
     const entries = state.accomplishments || [];
     const entry = entries.find((item) => item.id === editing);
     const intro = node('div', '', 'section-intro topic-intro topic-goals');
-    const title = node('h1', 'Things I’m proud of');
+    const title = node('h1', 'Smile File');
     title.tabIndex = -1;
     intro.append(title, node('p', 'Save a win, a kind word, or a moment you want to remember.'));
     const card = node('article', '', 'accomplishment-card');
-    card.append(node('h2', entry ? 'Edit Smile File entry' : 'What’s going in your smile file?'));
+    const addTitle = node('h2', entry ? 'Edit a win' : 'Add a win');
+    addTitle.tabIndex = -1;
+    card.append(addTitle);
     const form = node('form', '');
-    const field = (label, input) => {
+    const field = (label, input, parent = form) => {
       const wrapper = node('label', label);
       wrapper.append(input);
-      form.append(wrapper);
+      parent.append(wrapper);
       return input;
     };
     const name = field('What do you want to remember?', Object.assign(document.createElement('input'), {
@@ -82,15 +85,19 @@ export function accomplishments({ host, read, save, node, button, notify }) {
     const date = field('When did it happen?', Object.assign(document.createElement('input'), {
       type: 'date', required: true, max: localDate(new Date()), min: '1900-01-01', value: entry?.date || localDate(new Date())
     }));
-    const note = field('Why does it matter to you? Optional', Object.assign(document.createElement('textarea'), { value: entry?.note || '', maxLength: 1800 }));
+    const noteDetails = node('details', '', 'follow-up smile-note');
+    noteDetails.append(node('summary', 'Add a note (optional)'));
+    noteDetails.open = Boolean(entry?.note);
+    const note = field('Why did it matter?', Object.assign(document.createElement('textarea'),
+      { value: entry?.note || '', maxLength: 1800 }), noteDetails);
     const actions = node('div', '', 'actions');
-    actions.append(node('button', entry ? 'Save changes' : 'Save to my smile file'));
+    actions.append(node('button', entry ? 'Save changes' : 'Save win'));
     if (entry) {
       const cancel = button('Cancel', () => { editing = undefined; render(); }, 'quiet');
       cancel.type = 'button';
       actions.append(cancel);
     }
-    form.append(actions);
+    form.append(actions, noteDetails);
     form.onsubmit = (event) => {
       event.preventDefault();
       const title = name.value.trim();
@@ -102,27 +109,39 @@ export function accomplishments({ host, read, save, node, button, notify }) {
         editing = undefined;
         activeYear = yearOf(saved.date);
         render();
-        host.querySelector('h2').focus();
+        host.querySelector('#smile-past-heading').focus();
         notify('That one counts. It’s in your smile file!');
       }
     };
-    card.querySelector('h2').tabIndex = -1;
     card.append(form);
     const review = node('article', '', 'accomplishment-card');
-    review.append(node('h2', 'Your year in review'));
+    const pastTitle = node('h2', 'Past entries');
+    pastTitle.id = 'smile-past-heading';
+    pastTitle.tabIndex = -1;
+    review.append(pastTitle);
     const label = node('label', 'Year');
     const select = document.createElement('select');
     const years = new Set([yearOf(localDate(new Date())), activeYear, ...entries.map(({ date }) => yearOf(date))]);
     for (const year of [...years].sort().reverse()) select.add(new Option(year, year));
-    select.value = activeYear;
+    select.value = activeYear || accomplishmentsByYear(entries).keys().next().value || yearOf(localDate(new Date()));
     select.onchange = () => {
       activeYear = select.value;
       render();
       host.querySelector('select').focus();
     };
     label.append(select);
-    review.append(label, listing(), node('p', 'In the Plan hub, you can choose which wins to include in your AI summary and follow-up questions.'));
-    host.replaceChildren(intro, card, review);
+    review.append(label, listing());
+    const nav = node('nav', '', 'smile-sections');
+    nav.setAttribute('aria-label', 'Smile File sections');
+    for (const [label, target] of [['Add a win', addTitle], ['Past entries', pastTitle]]) {
+      nav.append(button(label, () => {
+        target.focus({ preventScroll: true });
+        target.scrollIntoView({ block: 'start' });
+      }, 'quiet'));
+    }
+    const panels = node('div', '', 'smile-panels');
+    panels.append(card, review);
+    host.replaceChildren(intro, nav, panels);
   }
   return { render, listing };
 }

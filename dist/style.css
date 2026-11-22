@@ -845,6 +845,29 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
   html:has(#library:not([hidden])) { scroll-padding-top: 220px; }
 }
 
+#accomplishments .smile-sections { display: flex; gap: 8px; margin-bottom: 10px; }
+#accomplishments .smile-sections button { min-height: 44px; }
+#accomplishments .smile-panels {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px; align-items: start;
+}
+#accomplishments .smile-panels > article { margin-block: 0; padding: clamp(14px, 3vw, 24px); }
+#accomplishments form > label { margin-block: 10px; }
+#accomplishments form > .actions { margin-top: 10px; }
+#accomplishments .smile-note { margin-top: 10px; }
+@media (max-width: 600px) {
+  #accomplishments > .section-intro { padding: 12px 14px; margin-bottom: 6px; }
+  #accomplishments > .section-intro h1 { font-size: clamp(1.65rem, 7vw, 2rem); }
+  #accomplishments > .section-intro p { margin-top: 5px; }
+  #accomplishments .smile-sections {
+    position: sticky; top: 110px; z-index: 4; padding: 4px 0;
+    background: var(--paper, #faf8fc);
+  }
+  #accomplishments .smile-sections button { flex: 1; }
+  #accomplishments .smile-panels { grid-template-columns: minmax(0, 1fr); }
+  html:has(#accomplishments:not([hidden])) { scroll-padding-top: 172px; }
+}
+
 #library .library-resource {
   align-self: stretch; min-inline-size: 0; min-block-size: 9rem;
   padding: 0; overflow-wrap: anywhere;
