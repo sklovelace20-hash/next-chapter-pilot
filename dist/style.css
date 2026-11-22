@@ -809,3 +809,45 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
   .roadmap-map { display: none; }
   .route-snapshot { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 }
+
+#library .library-sections {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px;
+  margin-bottom: 10px;
+}
+#library .library-sections :is(button, a) {
+  display: grid; place-items: center; min-height: 44px; padding: 5px 6px;
+  border: 1px solid var(--line); border-radius: 10px; background: white;
+  color: var(--ink); text-align: center; text-decoration: none; font-weight: 650;
+}
+#library .library-sections [aria-pressed='true'] { background: var(--purple); color: white; }
+#library .library-controls {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(105px, auto);
+  align-items: end; gap: 8px 12px; padding: 12px; margin: 0;
+}
+#library .library-controls > label { grid-column: 1; }
+#library .library-filters { margin: 0; padding: 0; }
+#library .library-filters > summary { padding: 11px 10px; min-height: 44px; }
+#library .library-filters[open] { grid-column: 1 / -1; }
+#library .library-filter-fields {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 0 10px 10px;
+}
+#library .library-filter-fields .library-featured { grid-column: 1; }
+#library .library-filter-fields > button { justify-self: end; }
+#library .library-count { margin: 8px 0; }
+#library .library-resource > details { margin-top: 8px; padding: 0 8px; }
+#library .library-resource summary { padding: 9px 0; min-height: 44px; font-size: .9rem; }
+#library .everyday-library-intro { padding: 14px; background: #f3eef8; }
+#library .everyday-library-intro h2 { color: var(--ink); }
+@media (max-width: 600px) {
+  #library > .section-intro { padding: 12px 14px; margin-bottom: 6px; }
+  #library > .section-intro h1 { font-size: clamp(1.65rem, 7vw, 2rem); }
+  #library > .section-intro p { display: none; }
+  #library .library-sections {
+    position: sticky; top: 110px; z-index: 4;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px; padding-block: 4px; background: var(--paper, #faf8fc);
+  }
+  #library .library-sections :is(button, a) { font-size: .82rem; }
+  html:has(#library:not([hidden])) { scroll-padding-top: 220px; }
+  #library .library-resource { padding: 10px; }
+}

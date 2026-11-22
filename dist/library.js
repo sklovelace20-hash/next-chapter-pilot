@@ -58,8 +58,17 @@ export function filterLibrary(resources, { query = '', format = '', theme = '', 
   });
 }
 
+const sections = [
+  ['All', []],
+  ['Books', ['Book', 'Memoir', 'Borrowing']],
+  ['Listen & read', ['Podcast', 'Substack', 'Newsletter', 'Craft archive', 'Publication']],
+  ['Tools', ['Tool', 'Community', 'Framework']],
+  ['Guides', []]
+];
+
 export function library({ host, node, button }) {
   let filter = {};
+  let active = 'All';
 
 
   function externalLink(label, url) {
@@ -100,13 +109,22 @@ export function library({ host, node, button }) {
     const intro = node('div', '', 'section-intro topic-intro topic-learning library-intro');
     const heading = node('h1', 'Library');
     heading.tabIndex = -1;
-    const guideLink = node('a', 'Browse guides and practices', 'topic-page-link');
-    guideLink.href = '#library-guides';
-    intro.append(heading, node('p', 'Find books, listening, and practical tools for what you’re working through.'), guideLink);
-
-    const courses = externalLink('Dig deeper with university courses', '/learning');
-    courses.className = 'topic-page-link';
-    intro.append(courses);
+    intro.append(heading, node('p', 'Find books, listening, and practical tools.'));
+    const nav = node('nav', '', 'library-sections');
+    nav.setAttribute('aria-label', 'Library sections');
+    const sectionButtons = sections.map(([title, formats]) => {
+      const control = button(title, () => {
+        selectSection(title, formats);
+        if (window.location.hash === '#library-guides') {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+        window.scrollTo(0, 0);
+      }, 'quiet');
+      nav.append(control);
+      return control;
+    });
+    nav.append(externalLink('Courses', '/learning'));
+    const resources = node('section', '', 'library-results');
     const controls = node('div', '', 'library-controls');
     const searchLabel = node('label', 'Search resources');
     const search = document.createElement('input');
@@ -115,17 +133,24 @@ export function library({ host, node, button }) {
     search.value = filter.query || '';
     searchLabel.append(search);
     controls.append(searchLabel);
+    const filters = node('details', '', 'follow-up library-filters');
+    const filterSummary = node('summary', 'Filters');
+    const filterFields = node('div', '', 'library-filter-fields');
+    filters.append(filterSummary, filterFields);
+    controls.append(filters);
 
     function select(label, key, emptyLabel) {
       const wrapper = node('label', label);
       const input = document.createElement('select');
       input.add(new Option(emptyLabel, ''));
-      const options = [...new Set(libraryResources.map((resource) => resource[key]))].sort();
-      for (const value of options) input.add(new Option(value, value));
+      if (key !== 'format') {
+        const options = [...new Set(libraryResources.map((resource) => resource[key]))].sort();
+        for (const value of options) input.add(new Option(value, value));
+      }
       input.value = filter[key] || '';
       input.onchange = refresh;
       wrapper.append(input);
-      controls.append(wrapper);
+      filterFields.append(wrapper);
       return input;
     }
 
@@ -143,14 +168,20 @@ export function library({ host, node, button }) {
       refresh();
       search.focus();
     }, 'quiet');
-    controls.append(featuredLabel, reset);
+    filterFields.append(featuredLabel, reset);
     search.oninput = refresh;
 
     const count = node('p', '', 'library-count');
     count.setAttribute('role', 'status');
     const grid = node('div', '', 'learning-browser learning-grid');
     function showResults() {
-      const results = filterLibrary(libraryResources, filter);
+      const [, sectionFormats] = sections.find(([title]) => title === active);
+      const collection = sectionFormats.length
+        ? libraryResources.filter(resource => sectionFormats.includes(resource.format))
+        : libraryResources;
+      const results = filterLibrary(collection, filter);
+      const applied = [filter.format, filter.theme, filter.featured].filter(Boolean).length;
+      filterSummary.textContent = applied ? `Filters (${applied})` : 'Filters';
       const formats = [...new Set(results.map(resource => resource.format))];
       grid.replaceChildren(...formats.map(formatName => {
         const items = results.filter(resource => resource.format === formatName);
@@ -170,6 +201,18 @@ export function library({ host, node, button }) {
       showResults();
     }
 
+    function selectSection(title, formats) {
+      active = title;
+      resources.hidden = title === 'Guides';
+      guides.hidden = !resources.hidden;
+      sectionButtons.forEach(control => control.setAttribute('aria-pressed', String(control.textContent === title)));
+      if (resources.hidden) return;
+      const options = [...(formats.length ? formats : new Set(libraryResources.map(resource => resource.format)))].sort();
+      format.replaceChildren(new Option('All formats', ''), ...options.map(value => new Option(value, value)));
+      format.value = options.includes(filter.format) ? filter.format : '';
+      refresh();
+    }
+
     const guides = node('section', '', 'everyday-library');
     guides.id = 'library-guides';
     const guideHeader = node('div', '', 'section-intro everyday-library-intro');
@@ -179,8 +222,10 @@ export function library({ host, node, button }) {
       collection('Four practices to try', middleTheoryPractices),
       everydayTools({ guide: 'living', node, button, excludeResourceUrls: new Set(libraryResources.map(({ url }) => resourceKey(url))) }),
       everydayTools({ guide: 'growing', node, button }));
-    host.replaceChildren(intro, controls, count, grid, guides);
-    showResults();
+    resources.append(controls, count, grid);
+    host.replaceChildren(intro, nav, resources, guides);
+    const selected = sections.find(([title]) => title === active);
+    selectSection(window.location.hash === '#library-guides' ? 'Guides' : selected[0], selected[1]);
   }
   return { render };
 }
