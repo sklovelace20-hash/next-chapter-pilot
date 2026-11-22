@@ -60,6 +60,19 @@ export async function reflect(request, env) {
   } catch {
     return json({ error: 'Choose answers to reflect on.' }, 400);
   }
+  if (mode === 'plan-tailoring') {
+    try {
+      const context = JSON.parse(input);
+      const target = context?.target;
+      if (target && Object.hasOwn(target, 'currentAction')) {
+        const { goal, milestone, focus } = target;
+        input = JSON.stringify({ acceptedAssessment: context.acceptedAssessment,
+          target: { goal, milestone, focus }, task: 'Roadmap next move. Use the duration, timing, and cue stated in the accepted report when relevant to this goal.' });
+      }
+    } catch {
+      // Older clients may send plain text.
+    }
+  }
   const guidance = mode === 'journey-round'
     ? 'For this discovery round, distinguish observations from assumptions and generate exactly 10 distinct, short follow-up questions grounded in the answers. Ask for concrete examples and alternatives.'
     : mode === 'journey-final'
@@ -69,7 +82,7 @@ export async function reflect(request, env) {
         : mode === 'assessment'
           ? 'Summarize the supplied report in plain language. Identify outcomes, strengths, gaps, or practical observations relevant to future questions and planning. Attribute results to the report and distinguish scores from interpretations. Do not reproduce lengthy text, reveal personal identifiers, diagnose, or treat the assessment as fact. Highlight two or three observations that can be checked in ordinary life.'
           : mode === 'plan-tailoring'
-            ? 'Use the accepted assessment summary as one input and the user’s goal as the priority. Suggest one controllable weekly action in profile.tryNext and one skill in profile.skill. For a Roadmap target with a current action, preserve the purpose of the milestone. If the accepted report describes a routine that worked or one the person prefers for this goal, use its specific duration, time, and cue in profile.tryNext. An existing action is editable context and its timing and duration are not requirements. Replace any conflicting timing or duration from that action with the report’s exact conditions unless the stated goal or an explicit constraint requires otherwise. In your overview, briefly explain the connection and offer a concrete indication of progress. Do not replace or invent goals.'
+            ? 'Use the accepted assessment summary as one input and the user’s goal as the priority. Suggest one controllable weekly action in profile.tryNext and one skill in profile.skill. For a Roadmap next move, preserve the purpose of the milestone. If the accepted report describes a routine that worked or one the person prefers for this goal, use its specific duration, time, and cue in profile.tryNext. Use the report’s exact conditions unless the stated goal or an explicit constraint requires otherwise. In your overview, briefly explain the connection and offer a concrete indication of progress. Do not replace or invent goals.'
             : '';
   const maxOutputTokens = mode === 'journey-round' || mode === 'assessment' ? 2100 : mode ? 1400 : 850;
   const assessmentInput = document ? [{ role: 'user', content: [
