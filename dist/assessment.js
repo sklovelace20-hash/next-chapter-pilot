@@ -40,8 +40,8 @@ export async function requestInsight(payload) {
 
 export function assessmentPanel({ read, save, node, button, notify }) {
   const box = node('details', '', 'follow-up assessment-panel');
-  box.append(node('summary', 'Add personality test results'),
-    node('p', 'Choose one or more reports, then press Submit to save them in this browser. For an optional AI summary, select one saved report (up to 2 MB) or paste text. Generating a summary sends that input to OpenAI.'));
+  box.append(node('summary', 'Add reports or test results'),
+    node('p', 'Save PDF, PNG, JPEG, or text reports in this browser. To use them in AI questions, insights, and Roadmap suggestions, generate and accept a summary. Generating a summary sends the chosen files (up to 2 MB each) or pasted text to OpenAI.'));
   const fileLabel = node('label', 'Test results file');
   const upload = document.createElement('input');
   upload.type = 'file';
@@ -80,7 +80,7 @@ export function assessmentPanel({ read, save, node, button, notify }) {
       savedFiles.append(row);
     }
     picker.value = previous;
-    pickerLabel.hidden = !reports.length;
+    pickerLabel.hidden = generateAll.hidden = !reports.length;
   }
   const submit = button('Submit test results', async () => {
     const files = Array.from(upload.files);
@@ -99,7 +99,6 @@ export function assessmentPanel({ read, save, node, button, notify }) {
     } catch { status.textContent = 'Could not confirm the save. Check browser storage and try again.'; }
     finally { submit.disabled = upload.disabled = false; }
   });
-  refresh().catch(() => { status.textContent = 'Saved reports could not be loaded. Check browser storage.'; });
   const draft = node('div', '');
   let latestDraft;
   function confirm(value) {
@@ -111,42 +110,68 @@ export function assessmentPanel({ read, save, node, button, notify }) {
       pasted.value = '';
       draft.replaceChildren();
       remove.hidden = false;
-      status.textContent = 'Accepted. This summary can inform your questions and plan.';
+      status.textContent = 'Accepted. This summary informs future AI questions, insights, and Roadmap suggestions.';
       notify('Assessment summary saved.');
     }
   }
-  const generate = button('Generate AI summary', async () => {
-    const typed = pasted.value.trim();
-    if (upload.files.length > 1) { status.textContent = 'Submit your reports first, then select one to summarize.'; return; }
-    const file = upload.files[0] || reports.find(report => report.id === picker.value)?.file;
-    if (!typed && !file) { status.textContent = 'Choose a file or paste your results.'; return; }
-    if (typed && file) { status.textContent = 'Use either the file or the pasted results.'; return; }
-    generate.disabled = true;
-    status.textContent = 'Reviewing the results…';
+  async function reportPayload(file) {
+    const mime = file.type || extensions[file.name.split('.').at(-1).toLowerCase()];
+    if (!allowed.includes(mime) || file.size > 2 * 1024 * 1024 || !file.size) {
+      throw new Error('Choose supported reports no larger than 2 MB each.');
+    }
+    if (mime === 'text/plain') {
+      const input = (await file.text()).trim();
+      if (!input || input.length > 24000) throw new Error('Text reports must contain 1 to 24,000 characters.');
+      return { mode: 'assessment', input };
+    }
+    return { mode: 'assessment', input: 'Read the attached report.', document: { mime, data: await readAsData(file) } };
+  }
+
+  async function generateDraft(files, typed = '') {
+    let completed = 0;
+    generate.disabled = generateAll.disabled = submit.disabled = true;
+    draft.replaceChildren();
     try {
-      const payload = { mode: 'assessment', input: typed };
-      if (file) {
-        const mime = file.type || extensions[file.name.split('.').at(-1).toLowerCase()];
-        if (!allowed.includes(mime) || file.size > 2 * 1024 * 1024 || !file.size) throw new Error('Choose a supported file no larger than 2 MB.');
-        if (mime === 'text/plain') {
-          payload.input = (await file.text()).trim();
-          if (!payload.input || payload.input.length > 24000) throw new Error('Paste the relevant results in 24,000 characters or fewer.');
-        } else {
-          payload.input = 'Read the attached assessment report.';
-          payload.document = { mime, data: await readAsData(file) };
+      const excerpts = [];
+      const budget = Math.floor(7800 / Math.max(files.length, 1));
+      async function add(payload) {
+        const result = await requestInsight(payload);
+        const text = [result.overview, ...result.insights].join('\n');
+        excerpts.push(text.length <= budget ? text : text.slice(0, budget - 1).replace(/\s+\S*$/, '') + '…');
+        completed += 1;
+      }
+      if (typed) {
+        status.textContent = 'Reviewing the pasted results…';
+        await add({ mode: 'assessment', input: typed });
+      } else {
+        for (const file of files) {
+          status.textContent = `Reviewing report ${completed + 1} of ${files.length}…`;
+          await add(await reportPayload(file));
         }
       }
-      const result = await requestInsight(payload);
-      latestDraft = [result.overview, ...result.insights].join('\n\n');
+      latestDraft = excerpts.join('\n\n');
       draft.replaceChildren(node('h3', 'Assessment summary to review'), node('blockquote', latestDraft, 'entry'),
         button('Accept as written', () => confirm(latestDraft)),
         button('Edit before accepting', () => { summary.value = latestDraft; summary.focus(); }, 'quiet'));
-      status.textContent = 'Review the draft and correct anything that doesn’t fit.';
+      status.textContent = 'Review and accept the summary to use it in questions, insights, and your roadmap.';
     } catch (error) {
       status.textContent = error.message;
     } finally {
-      generate.disabled = false;
+      generate.disabled = generateAll.disabled = submit.disabled = false;
     }
+  }
+
+  const generate = button('Generate AI summary', async () => {
+    const typed = pasted.value.trim();
+    const picked = reports.find(report => report.id === picker.value)?.file;
+    const files = Array.from(upload.files);
+    if (!files.length && picked) files.push(picked);
+    if (!typed && !files.length) { status.textContent = 'Choose files or paste your results.'; return; }
+    if (typed && files.length) { status.textContent = 'Use either files or pasted results.'; return; }
+    await generateDraft(files, typed);
+  }, 'quiet');
+  const generateAll = button('Summarize all saved reports', async () => {
+    if (reports.length) await generateDraft(reports.map(({ file }) => file));
   }, 'quiet');
   const remove = button('Remove saved summary', () => {
     if (!read().assessment) return;
@@ -160,6 +185,8 @@ export function assessmentPanel({ read, save, node, button, notify }) {
   }, 'quiet');
   remove.hidden = !read().assessment;
   const accept = button('Accept summary', () => { confirm(summary.value); remove.hidden = !read().assessment; });
-  box.append(fileLabel, submit, status, savedFiles, pickerLabel, textLabel, generate, draft, savedLabel, accept, remove);
+  generateAll.hidden = true;
+  box.append(fileLabel, submit, status, savedFiles, pickerLabel, textLabel, generate, generateAll, draft, savedLabel, accept, remove);
+  refresh().catch(() => { status.textContent = 'Saved reports could not be loaded. Check browser storage.'; });
   return box;
 }

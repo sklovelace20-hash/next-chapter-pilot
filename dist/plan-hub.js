@@ -85,7 +85,8 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
     };
     return link;
   }
-  const tracker = () => projectTracker({read,save,node,button,notify,aiDraft});
+  const tracker = () => projectTracker({read,save,node,button,notify,
+    aiDraft: (options) => aiDraft({ ...options, assessmentSummary: read().assessment?.summary })});
   function sectionNav(current) {
     const nav = node('nav', '', 'plan-sections');
     nav.setAttribute('aria-label', 'Plan sections');
@@ -304,7 +305,8 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
     }
     showAccepted();
     const wins = (state.accomplishments || []).map(({ date, title, note }) => [date + " · " + title, note || title]);
-    if (entries.length || wins.length) panel.append(aiDraft({ title, entries, wins, node, button, accept(draft) {
+    if (entries.length || wins.length || state.assessment?.summary) panel.append(aiDraft({
+      title, entries, wins, assessmentSummary: state.assessment?.summary, node, button, accept(draft) {
       if (persist({ accepted: draft })) { render(key); host.querySelector('h1').focus(); notify('Overview accepted.'); }
     } }));
 
@@ -360,17 +362,19 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
   return { render, tracker };
 }
 
-function aiDraft({ title, entries, wins, node, button, accept }) {
+function aiDraft({ title, entries, wins, assessmentSummary, node, button, accept }) {
   const box = node('details', '', 'follow-up hub-ai');
-  box.append(node('summary', 'Draft an AI overview'), node('p', 'If you generate an overview, only the answers you select will be sent to OpenAI. Privacy Vault entries are excluded.'));
-  const sources = answerSelection([['Answers for this section', entries], ['From my smile file', wins]], node);
+  box.append(node('summary', 'Draft an AI overview'), node('p', assessmentSummary
+    ? 'This sends your selected answers and accepted report summary to OpenAI. Privacy Vault entries are excluded.'
+    : 'Only the answers you select are sent to OpenAI. Privacy Vault entries are excluded.'));
+  const sources = answerSelection([['Answers for this section', entries.filter(([label]) => label !== 'Accepted assessment summary')], ['From my smile file', wins]], node);
   const status = node('p', '');
   status.setAttribute('role', 'status');
   const draftView = node('div', '');
   const generate = button('Generate AI overview', async () => {
     const selected = sources.selected();
-    if (!selected.length) { status.textContent = 'Select at least one answer.'; return; }
-    const body = JSON.stringify({ mode: 'plan-output', input: JSON.stringify({ section: title, entries: selected }) });
+    if (!selected.length && !assessmentSummary) { status.textContent = 'Select at least one answer.'; return; }
+    const body = JSON.stringify({ mode: 'plan-output', input: JSON.stringify({ section: title, entries: selected, acceptedAssessment: assessmentSummary }) });
     if (new TextEncoder().encode(body).length > 48000) {
       status.textContent = 'These answers exceed the limit for one overview. Uncheck a few and try again.';
       return;

@@ -2,6 +2,7 @@ import { viewRoutes } from './routes.js';
 import { profileFields } from './growth.js';
 import { planQuestions, personalityEvidence } from './deeper.js';
 import { seal, unseal } from './vault-crypto.js';
+import { requestInsight } from './assessment.js';
 
 export const vaultKey = 'next-chapter-encrypted-vault-v1';
 export const cadenceOptions = [[3, 'Every 3 days'], [7, 'Weekly'], [14, 'Every 2 weeks'], [30, 'Monthly']];
@@ -86,7 +87,8 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
   }
 
   function renderRoadmap() {
-    const { plan, projectTracker: tracker, roadmap: road } = read();
+    const state = read();
+    const { plan, projectTracker: tracker, roadmap: road } = state;
     const guide = node('section', '', 'route-guide');
     const heading = node('h1', 'Your roadmap');
     heading.tabIndex = -1;
@@ -140,6 +142,53 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
       goal.append(node('p', 'Current practice · ' + road.practice));
     }
     guide.append(goal);
+
+    const assessmentSummary = state.assessment?.summary;
+    if (assessmentSummary && !complete) {
+      const tailored = node('details', '', 'page-details route-goal');
+      tailored.append(node('summary', 'Tailor my next move with my reports'),
+        node('p', 'This sends your accepted report summary, goal, and current milestone or action to OpenAI.'));
+      const suggestion = node('div', '');
+      const status = node('p', '', 'inline-status');
+      status.setAttribute('role', 'status');
+      const generate = button('Suggest a next move', async () => {
+        generate.disabled = true;
+        suggestion.replaceChildren();
+        status.textContent = 'Drafting your next move…';
+        try {
+          const result = await requestInsight({ mode: 'plan-tailoring', input: JSON.stringify({
+            acceptedAssessment: assessmentSummary,
+            target: { goal: plan.goal, currentAction: current?.today || plan.action,
+              milestone: current?.title, exercise: current?.action, focus }
+          }) });
+          const proposed = result.profile.tryNext.trim();
+          if (!proposed) { status.textContent = 'The report did not support a specific next move.'; return; }
+          status.textContent = '';
+          suggestion.append(node('p', result.overview), node('p', proposed, 'entry'),
+            button('Use this next move', () => {
+              const latest = read();
+              if (latest.plan !== plan || latest.projectTracker !== tracker || latest.assessment?.summary !== assessmentSummary) {
+                status.textContent = 'The plan or report summary has changed. Reopen Roadmap and generate a fresh suggestion.';
+                return;
+              }
+              const updates = current
+                ? { projectTracker: { ...tracker, steps: steps.map((step, index) => index === active ? { ...step, today: proposed } : step) } }
+                : { plan: { ...plan, action: proposed } };
+              if (save({ ...latest, ...updates })) {
+                renderRoadmap();
+                get('roadmap').querySelector('h1').focus();
+                notify('Your next move was updated.');
+              }
+            }));
+        } catch (error) {
+          status.textContent = error.message;
+        } finally {
+          generate.disabled = false;
+        }
+      });
+      tailored.append(generate, status, suggestion);
+      guide.append(tailored);
+    }
 
     if (steps.length) {
       const path = node('ol', '', 'route-path');

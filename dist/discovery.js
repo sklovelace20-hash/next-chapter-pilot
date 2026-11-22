@@ -318,7 +318,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     }
     const profileDraft = (ai) => Object.fromEntries(Object.entries(ai.profile).filter(([key, value]) =>
       profileFields.some(([field]) => field === key) && value.trim()));
-    body.append(aiMirror({ sources, node, button,
+    body.append(aiMirror({ sources, assessmentSummary: state.assessment?.summary, node, button,
       accept(ai) {
         confirm({ ...draft, ...profileDraft(ai), acceptedReflection: { overview: ai.overview, insights: ai.insights, questions: ai.questions } });
       },

@@ -1,14 +1,16 @@
 import { answerSelection } from './answer-selection.js';
-export function aiMirror({ sources, node, button, accept, edit }) {
+export function aiMirror({ sources, assessmentSummary, node, button, accept, edit }) {
   const card = node('article', '', 'discover-card');
   card.append(node('h2', 'AI reflection'));
-  if (!sources.length) {
+  if (!sources.length && !assessmentSummary) {
     card.append(node('p', 'Add a few answers to see what the AI understood.'));
     return card;
   }
   const chooser = node('details', '', 'follow-up');
   chooser.append(node('summary', 'Choose what to reflect on'),
-    node('p', 'Only the answers you select will be sent to OpenAI to generate this draft. Privacy Vault entries are excluded.'));
+    node('p', assessmentSummary
+      ? 'This sends your selected answers and accepted report summary to OpenAI. Privacy Vault entries are excluded.'
+      : 'Only the answers you select are sent to OpenAI. Privacy Vault entries are excluded.'));
   const picks = answerSelection(sources, node);
   chooser.append(picks.wrapper);
   const status = node('p', '');
@@ -17,8 +19,8 @@ export function aiMirror({ sources, node, button, accept, edit }) {
   let lastReflection;
   const generate = button('Generate reflection', async () => {
     const selected = picks.selected();
-    if (!selected.length) { status.textContent = 'Select at least one answer.'; return; }
-    const input = JSON.stringify(selected);
+    if (!selected.length && !assessmentSummary) { status.textContent = 'Select at least one answer.'; return; }
+    const input = JSON.stringify({ entries: selected, acceptedAssessment: assessmentSummary });
     generate.disabled = true;
     status.textContent = 'Reading your selected answers…';
     result.replaceChildren();
