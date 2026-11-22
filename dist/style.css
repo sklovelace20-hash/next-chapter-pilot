@@ -647,3 +647,66 @@ main :is(.journey-card,.accomplishment-card,.settings-panel)>:last-child { margi
   padding-inline: var(--card-padding) var(--roadmap-inset);
 }
 #roadmap .roadmap-calendar { width: var(--roadmap-icon); height: auto; flex: none; margin-inline-end: calc(var(--roadmap-icon) * .09); }
+
+#home .home-hero { margin-bottom: var(--section-gap); }
+.home-links { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; }
+.home-links button { padding-inline: 0; border: 0; background: transparent; text-decoration: underline; text-underline-offset: 3px; }
+#discover > .section-intro { padding: clamp(20px, 4vw, 36px); background: #f3eef8; color: var(--ink); }
+#discover > .section-intro h1 { font-size: clamp(2rem, 5vw, 3.5rem); color: inherit; }
+#discover > .section-intro p { color: #514861; margin-bottom: 0; }
+#discover > .discover-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 108px), 1fr)); max-width: none; gap: 8px; }
+#discover > .discover-menu button { padding-inline: 9px; }
+.reflection-next { margin-block: 16px; padding: 14px 16px; border-radius: 12px; background: #f3eef8; }
+.reflection-next p { margin: 6px 0 0; }
+
+#workspace-nav {
+  position: sticky; top: 0; z-index: 6;
+  display: grid; grid-template-columns: repeat(8, minmax(0, 1fr));
+  padding: 4px; margin-bottom: 16px; border: 1px solid var(--line);
+  background: #f6f2fa;
+}
+#workspace-nav button { padding: 6px 4px; font-size: .88rem; white-space: normal; }
+@media (max-width: 760px) {
+  #workspace-nav { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  #workspace-nav button { font-size: .79rem; }
+}
+html { scroll-padding-top: 120px; }
+main > section > .section-intro,
+#dashboard > .hero {
+  padding: clamp(20px, 4vw, 36px);
+  background: #f3eef8;
+  color: var(--ink);
+}
+main > section > .section-intro :is(h1, p),
+#dashboard > .hero :is(h1, p) { color: inherit; }
+main > section > .section-intro h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
+main > section > .section-intro p:last-child { margin-bottom: 0; }
+body #fun > .section-intro { background: #f3eef8; color: var(--ink); }
+body #fun > .section-intro :is(h1,p) { color: inherit; }
+.plan-sections {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
+  gap: 8px; margin: 14px 0;
+}
+.plan-sections a {
+  display: grid; place-items: center; min-height: 44px; padding: 6px 8px;
+  border: 1px solid var(--line); border-radius: 10px; background: white;
+  color: var(--ink); text-align: center; text-decoration: none; font-weight: 650;
+}
+.plan-sections a:hover { background: #f3eef8; }
+.plan-sections a[aria-current='page'] { background: var(--purple); color: white; }
+.page-details, .library-resource {
+  align-self: start; border: 1px solid var(--line); border-radius: 12px; background: white;
+  padding: 0 14px;
+}
+.page-details > summary { padding-block: 13px; cursor: pointer; font-weight: 680; }
+.page-details[open] { padding-bottom: 14px; }
+#fun-ideas { align-items: start; }
+.library-resource { padding-block: 12px; }
+.library-resource h3 { margin: 0; font-size: 1rem; }
+.library-resource .library-credit { margin: 3px 0 0; }
+.library-resource .follow-up { margin-bottom: 0; }
+.learning-category > h2 { padding: 10px 12px; }
+
+#library .learning-browser { grid-template-columns: minmax(0, 1fr); }
+#library .learning-category { background: #f7f4fa; }
+#journey > .section-intro, #vault > .section-intro { margin-bottom: var(--section-gap); }

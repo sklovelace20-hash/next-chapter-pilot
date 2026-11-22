@@ -140,7 +140,9 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
           node('h3', step.title), node('p', step.action));
         path.append(item);
       });
-      guide.append(path);
+      const milestones = node('details', '', 'page-details');
+      milestones.append(node('summary', `All milestones (${steps.length})`), path);
+      guide.append(milestones);
     } else {
       guide.append(node('p', 'Build your timeline in Plan Hub to see each milestone here.'));
     }

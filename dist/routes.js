@@ -21,6 +21,9 @@ export const viewRoutes = {
   vault: '/vault'
 };
 
+export const discoveryTopics = [['profile', 'Personality'], ['values', 'Values'], ['reflection', 'Reflection'],
+  ['morning', 'Morning'], ['career', 'Career'], ['insights', 'Insights']];
+
 export const valuesExerciseRoute = '/values/exercise';
 export const pagePaths = [
   '/', valuesExerciseRoute, ...Object.values(viewRoutes), ...Object.values(topicRoutes)
@@ -34,7 +37,7 @@ export function pageAt(path) {
   }
   if (clean === viewRoutes.discover) {
     const requested = new URLSearchParams(query).get('topic');
-    if (requested === 'profile' || requested === 'reflection') {
+    if (discoveryTopics.some(([topic]) => topic === requested)) {
       return { view: 'discover', section: requested, path: `${clean}?topic=${requested}` };
     }
   }

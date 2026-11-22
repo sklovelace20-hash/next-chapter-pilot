@@ -1,15 +1,14 @@
 import { everydayTools } from './everyday-tools.js';
 import { valueCards } from './value-cards.js';
 import { aiMirror } from './ai-mirror.js';
+import { discoveryTopics } from './routes.js';
 import { mirrorSources, nextDraft, practiceFor, profileFields } from './growth.js';
 import { traits, strengths, reflections, careerQuestions,
   priorities, morningSets, profile, careerIdeas } from './discovery-content.js';
 
-export function discovery({ get, node, button, read, save, notify, applyPractice }) {
+export function discovery({ get, node, button, read, save, notify, applyPractice, openPage }) {
   let current = 'profile';
   let promptIndex = 0;
-  const sections = [['profile', 'Personality'], ['values', 'Values'], ['reflection', 'Reflection'],
-    ['morning', 'Morning'], ['career', 'Career'], ['insights', 'Insights']];
   const data = () => read().discovery || {};
   const write = (patch) => save({ ...read(), discovery: { ...data(), ...patch } });
 
@@ -58,9 +57,15 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     return selection;
   }
 
-  function open(name, index = 0) {
+  function open(name, index) {
     current = name;
-    promptIndex = index;
+    if (index === undefined && (name === 'reflection' || name === 'career')) {
+      const questions = name === 'reflection' ? reflections : careerQuestions;
+      const saved = data()[name] || {};
+      const next = questions.findIndex(([id]) => !saved[id]);
+      index = next < 0 ? (name === 'career' ? questions.length : 0) : next;
+    }
+    promptIndex = index ?? 0;
     render();
     get('discover').querySelector('.discover-card h2')?.focus();
   }
@@ -122,7 +127,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
         const valueMeaning = Object.fromEntries(fields.map(([value, input]) => [value, input.value.trim()]));
         const planValues = { selected: history[2], meanings: valueMeaning };
         if (save({ ...state, planValues, discovery: { ...data(), valueMeaning, tradeoff: tradeoff.value.trim() } })) {
-          open('reflection');
+          openPage('/discover?topic=reflection');
           notify('Your five values were added to your plan output.');
         }
       });
@@ -170,7 +175,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     const next = () => {
       if (promptIndex + 1 < questions.length) open(name, promptIndex + 1);
       else if (name === 'career') open('career', questions.length);
-      else open('insights');
+      else openPage('/discover?topic=insights');
     };
     submit(form, 'Save and continue', () => {
       if (write({ [name]: { ...existing, [key]: { answer: answer.value.trim(), follow: follow.value.trim(), clarify: clarify.value.trim() } } })) next();
@@ -233,7 +238,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     const extra = field(form, 'Add another priority', data().careerOther, true);
     const first = field(form, 'What comes first for you, and why?', data().careerFirst);
     submit(form, 'See career possibilities', () => {
-      if (write({ careerPriorities: chosen(), careerOther: extra.value.trim(), careerFirst: first.value.trim() })) open('insights');
+      if (write({ careerPriorities: chosen(), careerOther: extra.value.trim(), careerFirst: first.value.trim() })) openPage('/discover?topic=insights');
     });
     card.append(form);
     body.append(card);
@@ -279,7 +284,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
       const version = { date: new Date().toISOString(), profile: confirmed };
       if (save({ ...current, growth: { ...currentGrowth, confirmed,
         versions: [...(currentGrowth.versions || []), version] } })) {
-        open('insights');
+        openPage('/discover?topic=insights');
         notify('Your words will guide future insights.');
       }
     }
@@ -363,7 +368,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
         const old = current.growth || {};
         const entry = { skill: confirmed.skill, before: before.value, after: after.value, evidence: evidence.value.trim(), date: new Date().toISOString() };
         if (save({ ...current, growth: { ...old, assessments: [...(old.assessments || []), entry] } })) {
-          open('insights');
+          openPage('/discover?topic=insights');
           notify('Self-assessment saved.');
         }
       });
@@ -424,26 +429,13 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
   function render() {
     const collection = get('discover');
     const header = node('div', '', `section-intro topic-intro topic-${current}`);
-    const symbols = { profile: 'fingerprint', values: 'diamond', reflection: 'menu_book', morning: '☀', career: 'flag', insights: 'insights' };
     const heading = node('h1', 'Discover what drives you');
     heading.tabIndex = -1;
-    header.append(heading, node('p', 'Start with personality or choose one area to explore. Come back whenever you’re ready.'));
-    const privacy = node('small', 'Discovery answers are saved in this browser. Use the Privacy Vault for passphrase-protected notes.');
-    header.append(privacy);
+    header.append(heading, node('p', 'Choose one area to explore at your own pace.'));
     const menu = node('nav', '', 'discover-menu');
     menu.setAttribute('aria-label', 'Discovery topics');
-    for (const [key, title] of sections) {
-      const control = button('', () => {
-        if (key !== 'reflection' && key !== 'career') return open(key);
-        const questions = key === 'reflection' ? reflections : careerQuestions;
-        const saved = data()[key] || {};
-        const next = questions.findIndex(([id]) => !saved[id]);
-        open(key, next < 0 ? (key === 'career' ? questions.length : 0) : next);
-      }, 'hub-link discovery-tile topic-' + key);
-      const icon = node('span', symbols[key], 'hub-symbol');
-      if (key === 'morning') icon.style.fontFamily = 'system-ui';
-      icon.setAttribute('aria-hidden', 'true');
-      control.append(icon, node('span', title, 'hub-label'));
+    for (const [key, title] of discoveryTopics) {
+      const control = button(title, () => openPage(`/discover?topic=${key}`), 'quiet');
       control.setAttribute('aria-pressed', String(key === current));
       menu.append(control);
     }

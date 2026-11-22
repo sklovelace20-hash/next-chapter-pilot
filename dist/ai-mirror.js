@@ -1,7 +1,7 @@
 import { answerSelection } from './answer-selection.js';
 export function aiMirror({ sources, node, button, accept, edit }) {
   const card = node('article', '', 'discover-card');
-  card.append(node('h2', 'AI overview'));
+  card.append(node('h2', 'AI reflection'));
   if (!sources.length) {
     card.append(node('p', 'Add a few answers to see what the AI understood.'));
     return card;
@@ -14,22 +14,33 @@ export function aiMirror({ sources, node, button, accept, edit }) {
   const status = node('p', '');
   status.setAttribute('role', 'status');
   const result = node('div', '');
-  const generate = button('Generate AI overview', async () => {
+  let lastReflection;
+  const generate = button('Generate reflection', async () => {
     const selected = picks.selected();
     if (!selected.length) { status.textContent = 'Select at least one answer.'; return; }
+    const input = JSON.stringify(selected);
     generate.disabled = true;
     status.textContent = 'Reading your selected answers…';
     result.replaceChildren();
     try {
-      const response = await fetch('/api/reflection', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(JSON.stringify(selected))
-      });
-      const draft = await response.json();
-      if (!response.ok) throw new Error(draft.error);
+      if (lastReflection?.input !== input) {
+        const response = await fetch('/api/reflection', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input)
+        });
+        const draft = await response.json();
+        if (!response.ok) throw new Error(draft.error);
+        lastReflection = { input, draft };
+      }
+      const { draft } = lastReflection;
       status.textContent = '';
       result.append(node('h3', 'What I heard'), node('p', draft.overview));
-      for (const [title, entries] of [['Possible insights', draft.insights], ['Questions to clarify', draft.questions]]) {
+      if (draft.profile.tryNext.trim()) {
+        const next = node('div', '', 'reflection-next');
+        next.append(node('h3', 'One step to try'), node('p', draft.profile.tryNext));
+        result.append(next);
+      }
+      for (const [title, entries] of [['What stands out', draft.insights], ['To think about', draft.questions]]) {
         if (!entries.length) continue;
         const list = node('ul', '');
         for (const entry of entries) list.append(node('li', entry));

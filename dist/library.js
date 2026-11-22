@@ -47,11 +47,6 @@ export const libraryResources = [...new Map([
     ({ format: formats[category], theme: themes[index], title, by, url, description, prompt }))
 ].map((resource) => [resourceKey(resource.url), resource])).values()];
 
-const typeStyles = {
-  Framework: ['psychology', 'frameworks'], Book: ['menu_book', 'books'], Podcast: ['insights', 'podcasts'],
-  Memoir: ['menu_book', 'memoirs'], Tool: ['checklist', 'tools'], Community: ['auto_awesome', 'tools'],
-  Borrowing: ['menu_book', 'publications']
-};
 
 
 export function filterLibrary(resources, { query = '', format = '', theme = '', featured = false } = {}) {
@@ -74,17 +69,13 @@ export function library({ host, node, button }) {
   }
 
   function resourceCard(resource) {
-    const { format, theme, title, by, url, description, prompt } = resource;
-    const [glyph, style] = typeStyles[format] || ['checklist', 'publications'];
-    const card = node('details', '', `learning-topic library-card library-${style}`);
-    const artwork = node('span', glyph, 'library-art hub-symbol');
-    artwork.setAttribute('aria-hidden', 'true');
-    const head = node('div', '', 'library-card-head');
-    head.append(artwork, node('p', `${format} · ${theme}`, 'library-meta'));
-    const exercise = node('details', '', 'follow-up');
-    exercise.append(node('summary', 'Try it'), node('p', prompt));
-    card.append(node('summary', title), head, node('p', by, 'library-credit'), node('p', description),
-      externalLink('Open resource', url), exercise);
+    const { theme, title, by, url, description, prompt } = resource;
+    const card = node('article', '', 'library-resource');
+    const heading = node('h3', '');
+    heading.append(externalLink(title, url));
+    const detail = node('details', '', 'follow-up');
+    detail.append(node('summary', 'About this resource'), node('p', description), node('p', prompt));
+    card.append(heading, node('p', [by, theme].filter(Boolean).join(' · '), 'library-credit'), detail);
     return card;
   }
 
@@ -163,12 +154,11 @@ export function library({ host, node, button }) {
       const formats = [...new Set(results.map(resource => resource.format))];
       grid.replaceChildren(...formats.map(formatName => {
         const items = results.filter(resource => resource.format === formatName);
-        const category = node('details', '', 'learning-category');
-        category.append(node('summary', formatName + ' (' + items.length + ')'));
+        const category = node('section', '', 'learning-category');
+        category.append(node('h2', formatName + ' (' + items.length + ')'));
         const topics = node('div', '', 'learning-topics');
         topics.append(...items.map(resourceCard));
         category.append(topics);
-        category.open = Boolean(filter.query || filter.format || filter.theme || filter.featured);
         return category;
       }));
       count.textContent = results.length ? results.length + ' resources' : 'No matching resources. Try a different search or clear the filters.';
