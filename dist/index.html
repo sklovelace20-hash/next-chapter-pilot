@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ede9ff">
+<meta name="description" content="Build a week that reflects what matters to you.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="stylesheet" href="/style.css">
+<title>Next Chapter</title>
+<script type="module" src="/app.js"></script>
+</head>
+<body>
+<header><a class="brand" href="/"><span aria-hidden="true">✳</span> Next Chapter</a><button class="quiet" id="settings">Your data</button></header>
+<main>
+<section id="home">
+<div class="hero home-hero">
+<div><p class="eyebrow">A PERSONAL PLANNING SPACE</p><h1 id="home-title" tabindex="-1">Make room for<br><em>what matters.</em></h1><p>Turn what you value into a 90-day goal and one action you can take this week.</p><div class="actions"><button id="discover-start">Start with personality</button><button class="quiet" id="start">Build my dashboard</button></div></div>
+<div class="hero-art" aria-hidden="true"><img src="/evening-trail.webp" alt="" width="1200" height="800" fetchpriority="high"></div>
+</div>
+<div class="actions"><button id="home-library" class="quiet">Library</button><button id="home-accomplishments" class="quiet">Accomplishments</button></div><div id="home-check-in"></div><div class="features"><article><span>◎</span><h2>Find your focus</h2><p>Five questions about your values, your season of life, and the time you have.</p></article><article><span>↳</span><h2>Take one action</h2><p>Make a weekly commitment you can fit around the things you need to protect.</p></article><article><span>◷</span><h2>Review your week</h2><p>Log what happened and adjust your plan as you learn what works.</p></article></div>
+</section>
+<section id="journey" hidden></section>
+<section id="setup" class="panel" hidden>
+<p id="step" class="eyebrow"></p><progress id="progress" max="5"></progress>
+<form id="questions"><h1 id="question" tabindex="-1"></h1><div id="fields"></div><div class="actions"><button class="quiet" type="button" id="back">Back</button><button id="next">Continue</button></div></form>
+</section>
+<section id="editor" class="panel" hidden>
+<p class="eyebrow">YOUR PLAN</p><h1 id="editor-title" tabindex="-1">Make it yours.</h1><p>Adjust any part of the plan before saving.</p>
+<details id="plan-context" class="follow-up"></details><form id="plan"><label>90-day goal<textarea name="goal" required></textarea></label><label>Weekly action<textarea name="action" required></textarea></label><label>What to track<input name="tracker" required></label><label>Reflection prompt<textarea name="prompt" required></textarea></label><div class="actions"><button type="button" class="quiet" id="cancel-edit">Back</button><button>Save plan</button></div></form>
+</section>
+<nav id="workspace-nav" aria-label="Dashboard views" hidden>
+<button data-view="dashboard">Today</button><button data-view="discover">Discover</button><button data-view="roadmap">Roadmap</button><button data-view="output">Plan hub</button><button data-view="library">Library</button><button data-view="accomplishments">Accomplishments</button><button data-view="vault">Privacy vault</button>
+</nav>
+<section id="dashboard" hidden></section><section id="discover" hidden></section>
+<section id="roadmap" hidden></section><section id="output" hidden></section><section id="library" hidden></section><section id="accomplishments" hidden></section>
+<section id="vault" hidden></section>
+<dialog id="share" aria-labelledby="share-title">
+<h2 id="share-title">Share an update</h2>
+<p>Choose what to include. The recipient gets a copy they can keep.</p>
+<label>Who is it for?<select id="audience"><option>Family member</option><option>Loved one</option><option>Coach</option><option>Leader</option></select></label>
+<fieldset id="share-items"><legend>Include in this update</legend></fieldset>
+<label>Preview<textarea id="share-preview" rows="6" readonly></textarea></label>
+<div class="actions"><button id="copy-share" disabled>Copy update</button><button id="download-share" class="quiet" disabled>Download text</button><button id="close-share" class="quiet">Close</button></div>
+<p id="share-feedback" role="status"></p>
+</dialog>
+</main>
+<footer>Next Chapter <span aria-hidden="true">·</span> Saved on this browser</footer>
+<dialog id="data"><h2>Your data</h2><p>Your dashboard and Discover answers are stored in this browser profile. The vault uses a separate passphrase. The JSON export includes the encrypted vault, and deleting your data clears both.</p><div class="actions"><button class="quiet" id="export">Export JSON</button><button class="danger" id="delete">Delete my data</button></div><form method="dialog"><button class="quiet">Close</button></form></dialog>
+<dialog id="review"><h2>Check-in</h2><p id="reflection"></p><form id="review-form"><label>What happened?<textarea name="notes" required></textarea></label><label>Did you take your planned action?<select name="outcome" required><option value="">Choose an outcome</option><option>Completed</option><option>Partly completed</option><option>Skipped</option></select></label><label>What will you adjust next? <small>Optional</small><textarea name="adjustment"></textarea></label><label id="apply-label"><input type="checkbox" name="apply"> Use the adjustment as my next action</label><label>What evidence did you collect? <small>Optional</small><textarea name="evidence" aria-describedby="evidence-prompt"></textarea><small id="evidence-prompt"></small></label>
+<label id="skill-check">How would you rate your skill today? <small>Optional</small><select name="rating"><option value="">Choose a rating</option><option value="1">1 · Beginning</option><option value="2">2 · Learning</option><option value="3">3 · Practicing</option><option value="4">4 · Independent</option><option value="5">5 · Consistent</option></select></label>
+<div class="actions"><button type="button" class="quiet" id="close-review">Cancel</button><button>Save check-in</button></div></form></dialog>
+<p id="notice" role="status"></p>
+</body>
+</html>
