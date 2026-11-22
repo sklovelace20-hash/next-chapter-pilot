@@ -48,14 +48,14 @@ function save(next) {
 function show(id, focus, path = viewRoutes[id] || '/') {
   if (id === 'fun') refreshBucket();
   if (window.location.pathname + window.location.search !== path) window.history.pushState(null, '', path);
+  if (id !== 'vault' && !get('vault').hidden && get('vault').hasChildNodes()) tools.lock();
   for (const page of ['home', 'welcome', 'setup', 'editor', 'journey', 'fun', ...tools.viewIds]) get(page).hidden = page !== id;
-  get('workspace-nav').hidden = id !== 'fun' && !tools.viewIds.includes(id);
   for (const tab of get('workspace-nav').querySelectorAll('button')) {
     tab.hidden = !state.plan && !['dashboard', 'discover', 'output', 'roadmap', 'library', 'accomplishments', 'fun'].includes(tab.dataset.view);
     if (tab.dataset.view === 'dashboard') tab.textContent = state.plan ? 'Today' : 'Home';
   }
   for (const tab of get('workspace-nav').querySelectorAll('button')) {
-    if (tab.dataset.view === id) tab.setAttribute('aria-current', 'page');
+    if (tab.dataset.view === (id === 'home' ? 'dashboard' : id)) tab.setAttribute('aria-current', 'page');
     else tab.removeAttribute('aria-current');
   }
   window.scrollTo(0, 0);
@@ -179,7 +179,7 @@ function applyPractice(title, practice, section = 'practice', replaceSkill = fal
   }
 }
 
-const discover = discovery({ get, node, button, read: () => state, save, notify, applyPractice });
+const discover = discovery({ get, node, button, read: () => state, save, notify, applyPractice, openPage });
 const showAssessment = () => assessmentPanel({ read: () => state, save, node, button, notify });
 const startingPoint = journey({
   host: get('journey'), read: () => state, save, node, button, notify,
@@ -246,11 +246,11 @@ function dashboard() {
     cards.append(card);
   }
   const history = node('article', '');
-  history.append(node('h2', 'Check-in history'));
+  history.append(node('h2', `Check-in history (${reviews.length})`));
   if (!reviews.length) history.append(node('p', 'Your first check-in will appear here.'));
   for (const review of [...reviews].reverse()) {
-    const entry = node('section', '');
-    entry.append(node('h3', `${date.format(new Date(review.date))} · ${review.outcome}`),
+    const entry = node('details', '', 'follow-up');
+    entry.append(node('summary', `${date.format(new Date(review.date))} · ${review.outcome}`),
       node('p', review.action), node('p', review.notes, 'entry'));
     if (review.evidence) entry.append(node('p', `Evidence: ${review.evidence}`, 'entry'));
     if (review.rating) entry.append(node('p', `Skill self-assessment: ${review.rating}/5`));

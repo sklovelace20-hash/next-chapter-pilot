@@ -86,24 +86,23 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
     return link;
   }
   const tracker = () => projectTracker({read,save,node,button,notify,aiDraft});
+  function sectionNav(current) {
+    const nav = node('nav', '', 'plan-sections');
+    nav.setAttribute('aria-label', 'Plan sections');
+    if (current) nav.append(pageLink('Overview', viewRoutes.output));
+    for (const [id, name] of sections) {
+      const link = pageLink(name, topicRoutes[id]);
+      if (id === current) link.setAttribute('aria-current', 'page');
+      nav.append(link);
+    }
+    return nav;
+  }
+
   function renderHub() {
     const intro = node('div', '', 'section-intro topic-intro topic-plan');
     const heading = node('h1', 'Plan Hub');
     heading.tabIndex = -1;
     intro.append(heading, node('p', 'Shape your goal, choose your exercises, and capture what you learn.'));
-    const nav = node('nav', '', 'hub-nav');
-    nav.setAttribute('aria-label', 'Plan sections');
-    const brain = node('div', '', 'hub-brain');
-    brain.append(node('span', 'psychology', 'hub-symbol'));
-    brain.setAttribute('aria-hidden', 'true');
-    nav.append(brain);
-    for (const [id, name] of sections) {
-      const control = pageLink('', topicRoutes[id], `hub-link topic-${id}`);
-      const icon = node('span', hubIcons[id], 'hub-symbol');
-      icon.setAttribute('aria-hidden', 'true');
-      control.append(icon, node('span', name, 'hub-label'));
-      nav.append(control);
-    }
     const tools = node('div', '', 'hub-tools');
     function toolCard(label, icon, content) {
       const box = node('details', '', 'hub-tool');
@@ -147,7 +146,7 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
     tools.append(insight, tests, toolCard('My 90-day plan', hubIcons.goals, tracker),
       toolCard('Assessments and check-ins', hubIcons.reflection, planSettings),
       pageLink('View my roadmap', viewRoutes.roadmap, 'topic-page-link'));
-    host.replaceChildren(intro, nav, tools);
+    host.replaceChildren(intro, sectionNav(), tools);
   }
 
   function render(key) {
@@ -156,7 +155,6 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
     const [, title, graphic, defaults] = sections.find(([id]) => id === key);
     const { entries, selected, skills } = hubEvidence(state, key);
     const saved = state.planHub?.[key] || {};
-    const back = pageLink('Plan hub', viewRoutes.output, 'topic-page-link');
     const panel = node('article', '', `hub-panel hub-feature topic-${key}`);
     const sectionTitle = node('h1', title);
     sectionTitle.tabIndex = -1;
@@ -352,7 +350,7 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
       proud.tabIndex = -1;
       panel.append(proud, accomplishments(), button('Add to my Smile File', openAccomplishments, 'quiet'));
     }
-    host.replaceChildren(back, panel);
+    host.replaceChildren(sectionNav(key), panel);
   }
   return { render, tracker };
 }

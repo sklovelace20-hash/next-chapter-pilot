@@ -14,10 +14,13 @@
 <body>
 <header><a class="brand" href="/"><img src="/mountain-book.webp" alt="Next Chapter"></a><button class="quiet" id="settings">Your data</button></header>
 <main>
-<details class="ai-note"><summary>Disclaimer</summary><p>When you ask for AI insights, your answers and relevant reflection summaries are sent to OpenAI. AI can miss the mark. Keep what feels right, change the wording, or skip the suggestion.</p></details>
+<nav id="workspace-nav" aria-label="Main navigation">
+<button data-view="dashboard">Home</button><button data-view="discover">Discover</button><button data-view="roadmap">Roadmap</button><button data-view="output">Plan hub</button><button id="fun-nav" data-view="fun">Fun</button><button data-view="library">Library</button><button data-view="accomplishments">Smile File</button><button data-view="vault">Privacy vault</button>
+</nav>
+
 <section id="home">
 <div class="hero home-hero">
-<div><h1 id="home-title" tabindex="-1">Hey there.</h1><p id="welcome-intro">Up for digging a little deeper? You’re in the right place. Grab a shovel. Pickaxe optional.</p><p id="welcome-detail">When you request AI insights, AI reviews your answers. You decide what fits.</p><div class="actions"><button id="welcome-start">Let’s dig in</button><button class="quiet" id="welcome-explore">I’d rather look around</button><button class="quiet" id="home-fun">Find something fun</button></div></div>
+<div><h1 id="home-title" tabindex="-1">Hey there.</h1><p id="welcome-intro">Explore what matters to you and choose one thing to try.</p><div class="actions"><button id="welcome-discover">Go to Discover</button><button class="quiet" id="welcome-start">Help me get started</button></div><div class="home-links"><button class="quiet" id="welcome-explore">More to explore</button><button class="quiet" id="home-fun">Find something fun</button></div></div>
 <div class="hero-art" aria-hidden="true"><img src="/evening-trail.webp" alt="" width="1200" height="800" fetchpriority="high"></div>
 </div>
 
@@ -42,9 +45,6 @@
 <p class="eyebrow">YOUR PLAN</p><h1 id="editor-title" tabindex="-1">Make it yours.</h1><p>Adjust any part of the plan before saving.</p>
 <details id="plan-context" class="follow-up"></details><form id="plan"><label>90-day goal<textarea name="goal" required></textarea></label><label>Weekly action<textarea name="action" required></textarea></label><label>What to track<input name="tracker" required></label><label>Reflection prompt<textarea name="prompt" required></textarea></label><div class="actions"><button type="button" class="quiet" id="cancel-edit">Back</button><button>Save plan</button></div></form>
 </section>
-<nav id="workspace-nav" aria-label="Dashboard views" hidden>
-<button data-view="dashboard">Today</button><button data-view="discover">Discover</button><button data-view="roadmap">Roadmap</button><button data-view="output">Plan hub</button><button id="fun-nav" data-view="fun">Fun</button><button data-view="library">Library</button><button data-view="accomplishments">Smile File</button><button data-view="vault">Privacy vault</button>
-</nav>
 <section id="dashboard" hidden></section><section id="discover" hidden></section>
 <section id="roadmap" hidden></section><section id="output" hidden></section><section id="library" hidden></section><section id="accomplishments" hidden></section>
 <section id="vault" hidden></section>
@@ -55,18 +55,18 @@
 </div>
 <div class="fun-body">
 <article class="fun-reflection bucket-card">
-<h2>Bucket List Bingo</h2><p>Big dreams and little joys belong on the same board. Add something you’d love to do, then tap its square when you’ve done it. Three in a row? Bingo.</p>
+<h2>Bucket List Bingo</h2><p>Add something you’d love to do. Tap its square when you’ve done it.</p>
 <form id="bucket-form"><label>What’s on your list?<input id="bucket-name" maxlength="160" required placeholder="Go to a college game"></label><button>Add to my board</button></form>
 <details id="bucket-inspo"><summary>Need inspo?</summary></details>
 <p id="bucket-progress"></p><div id="bucket-board" aria-label="Bucket list board" role="group"></div><div class="actions"><button id="bucket-prev" class="quiet">Previous board</button><button id="bucket-next" class="quiet">Next board</button></div><p id="bucket-status" role="status"></p>
 </article>
-<article class="fun-reflection">
-<h2>What gets in the way today?</h2>
+<details class="fun-reflection page-details">
+<summary>What gets in the way today?</summary>
 <p>Pick what sounds familiar and try one small way around it.</p>
 <div id="fun-barriers" class="actions" role="group" aria-label="What gets in the way"></div>
 <p id="fun-reframe" role="status" hidden></p>
 <details class="follow-up"><summary>Give me something to think about</summary><p>What did you love doing before you cared whether you were good at it? What would the five-minute version look like now?</p></details>
-</article>
+</details>
 <article class="fun-collection" aria-labelledby="fun-collection-title">
 <h2 id="fun-collection-title">Find something fun to do</h2>
 <p>Every idea here is free using what you already have.</p>
@@ -90,7 +90,7 @@
 <p id="share-feedback" role="status"></p>
 </dialog>
 </main>
-<footer><span>Next Chapter · Saved on this browser</span><button type="button" class="feedback-link" id="open-feedback">Something off?</button></footer>
+<footer><span>Next Chapter · Saved on this browser</span><button type="button" class="feedback-link" id="open-feedback">Something off?</button><details class="ai-note"><summary>How AI uses your answers</summary><p>When you ask for AI insights, your answers and relevant reflection summaries are sent to OpenAI. AI can miss the mark. Keep what feels right, change the wording, or skip the suggestion.</p></details></footer>
 <dialog id="feedback" aria-labelledby="feedback-title">
 <h2 id="feedback-title">Something off?</h2>
 <p>Tell me what happened. A sentence or two is plenty. We’ll include the page you were on.</p>

@@ -37,7 +37,12 @@ export function accomplishments({ host, read, save, node, button, notify }) {
       for (const item of entries) {
         const entry = node('li', '');
         entry.append(node('strong', item.title), node('p', dateLabel(item.date), 'library-credit'));
-        if (item.note) entry.append(node('p', item.note, 'entry'));
+        if (item.note && all) entry.append(node('p', item.note, 'entry'));
+        if (item.note && !all) {
+          const detail = node('details', '', 'follow-up');
+          detail.append(node('summary', 'Why it mattered'), node('p', item.note, 'entry'));
+          entry.append(detail);
+        }
         if (!all) {
           const edit = button('Edit', () => {
             editing = item.id;
@@ -61,8 +66,7 @@ export function accomplishments({ host, read, save, node, button, notify }) {
     const intro = node('div', '', 'section-intro topic-intro topic-goals');
     const title = node('h1', 'Things I’m proud of');
     title.tabIndex = -1;
-    intro.append(title, node('p', 'Welcome to your smile file. Hit a goal? Finished that thing you kept putting off? Got a compliment you’re still riding high on? It all goes here.'),
-      node('p', 'Save the places you’ve been, the things you’ve tried, and the moments you want to remember. On the days it’s hard to recall a single win, come back here for a reminder of how freaking awesome you are.'));
+    intro.append(title, node('p', 'Save a win, a kind word, or a moment you want to remember.'));
     const card = node('article', '', 'accomplishment-card');
     card.append(node('h2', entry ? 'Edit Smile File entry' : 'What’s going in your smile file?'));
     const form = node('form', '');

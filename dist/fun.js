@@ -47,8 +47,8 @@ export function funPage({ get, node }) {
     pick.hidden = true;
     previous = undefined;
     grid.replaceChildren(...matching().map(([name, description]) => {
-      const card = node('article');
-      card.append(node('h3', name), node('p', description));
+      const card = node('details', '', 'page-details');
+      card.append(node('summary', name), node('p', description));
       return card;
     }));
   }

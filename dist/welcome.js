@@ -143,10 +143,9 @@ export function welcomeFlow({ get, node, button, read, save, show, openPage }) {
     const exploring = window.location.search === '?explore=1';
     get('home-title').textContent = returning ? 'Hey, welcome back.' : 'Hey there.';
     get('welcome-intro').textContent = returning
-      ? 'Pick up with your starting point or see what else catches your eye.'
-      : 'Up for digging a little deeper? You’re in the right place. Grab a shovel. Pickaxe optional.';
-    get('welcome-detail').hidden = returning;
-    get('welcome-start').textContent = returning ? 'My starting point' : 'Let’s dig in';
+      ? 'Continue exploring or return to your starting point.'
+      : 'Explore what matters to you and choose one thing to try.';
+    get('welcome-start').textContent = returning ? 'My starting point' : 'Help me get started';
     get('home-explore').hidden = !exploring;
     get('welcome-explore').hidden = exploring;
     get('welcome-start').onclick = () => {
@@ -154,6 +153,7 @@ export function welcomeFlow({ get, node, button, read, save, show, openPage }) {
       return returning ? recommendation(read().welcome.startingPoint) : render();
     };
     get('welcome-explore').onclick = explore;
+    get('welcome-discover').onclick = () => openPage('/discover');
   }
   return { home, render, reset };
 }
