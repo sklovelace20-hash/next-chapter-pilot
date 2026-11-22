@@ -782,3 +782,34 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
   #discover .value-actions .selection-count { margin: 0; font-size: .83rem; }
   #discover .value-actions button { padding: 6px 10px; }
 }
+
+.hub-primary { margin-block: 0 16px; }
+.hub-primary .hub-questions { margin-top: 12px; }
+@media (max-width: 600px) {
+  #output > .section-intro { padding: 12px 14px; margin-bottom: 6px; }
+  #output > .section-intro h1 { font-size: clamp(1.65rem, 7vw, 2rem); }
+  #output > .section-intro p { display: none; }
+  #output > .plan-sections {
+    position: sticky; top: 110px; z-index: 4;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px; margin: 0 0 10px; padding: 4px 0;
+    background: var(--paper, #faf8fc);
+  }
+  #output > .plan-sections a { padding: 3px 5px; font-size: .8rem; line-height: 1.15; }
+  html:has(#output:not([hidden])) { scroll-padding-top: 264px; }
+  #output > .hub-feature { --card-padding: 14px; padding: var(--card-padding); }
+  #output .hub-topic-banner {
+    min-height: 0; padding: 12px 14px; margin-bottom: 10px; background: var(--topic-light);
+  }
+  #output .hub-topic-banner h1 { font-size: clamp(1.6rem, 6vw, 2rem); line-height: 1.1; }
+  #output .hub-topic-art, #output .personality-portrait, #output .personality-heading p { display: none; }
+  #output .hub-topic-banner.personality-hero { display: block; }
+  #output .personality-heading { padding: 0; }
+  #output .hub-primary :is(h2, .topic-page-link) { margin-block: 0 6px; }
+  #output .hub-primary label { margin-block: 8px; }
+  #output .hub-primary textarea { min-height: 64px; }
+  #output .hub-tools { gap: 6px; }
+  #output .hub-tool > summary { min-height: 48px; padding: 6px 10px; }
+  #output .personality-shortcuts .personality-tile { min-height: 44px; }
+  #output .personality-shortcuts .hub-symbol { display: none; }
+}

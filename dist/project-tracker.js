@@ -35,15 +35,16 @@ export function projectTracker({read,save,node,button,notify,aiDraft}) {
     const state=read(), plan=state.plan || {}, tracker=state.projectTracker;
     root.replaceChildren(node('h2','My 90-day plan'));
     if (!tracker) {
-      const setup=fold('Build my timeline');
+      const setup=node('section');
       root.append(node('p',plan.goal || 'Start with where you want to be in 90 days. Choose one or two things you can practice to get there.'),setup);
       const form=node('form');
       const goal=field(form,'In 90 days, what do you want to be able to say?',plan.goal,true);
       const focus=field(form,'One specific thing to work on',state.roadmap?.skill,true);
       focus.placeholder='Getting more face time with leadership';
-      const second=field(form,'A second focus, if it helps');
-      const first=field(form,'Your first exercise (optional)',plan.action);
-      form.append(node('button','Build my timeline')); setup.append(form);
+      const optional=fold('Add an optional focus or first exercise');
+      const second=field(optional,'A second focus, if it helps');
+      const first=field(optional,'Your first exercise (optional)',plan.action);
+      form.append(node('button','Build my timeline'),optional); setup.append(form);
       form.onsubmit=e=>{
         e.preventDefault();
         if (!goal.value.trim() || !focus.value.trim()) return notify('Add an outcome and one focus.');

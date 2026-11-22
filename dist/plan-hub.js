@@ -89,7 +89,9 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
   function sectionNav(current) {
     const nav = node('nav', '', 'plan-sections');
     nav.setAttribute('aria-label', 'Plan sections');
-    if (current) nav.append(pageLink('Overview', viewRoutes.output));
+    const overview = pageLink('Overview', viewRoutes.output);
+    if (!current) overview.setAttribute('aria-current', 'page');
+    nav.append(overview);
     for (const [id, name] of sections) {
       const link = pageLink(name, topicRoutes[id]);
       if (id === current) link.setAttribute('aria-current', 'page');
@@ -143,9 +145,9 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
       };
       return form;
     });
-    tools.append(insight, tests, toolCard('My 90-day plan', hubIcons.goals, tracker),
-      toolCard('Assessments and check-ins', hubIcons.reflection, planSettings),
-      pageLink('View my roadmap', viewRoutes.roadmap, 'topic-page-link'));
+    tools.append(toolCard('My 90-day plan', hubIcons.goals, tracker), insight,
+      pageLink('View my roadmap', viewRoutes.roadmap, 'topic-page-link'), tests,
+      toolCard('Assessments and check-ins', hubIcons.reflection, planSettings));
     host.replaceChildren(intro, sectionNav(), tools);
   }
 
@@ -176,7 +178,8 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
       banner.replaceChildren(portrait, heading);
       banner.classList.add('personality-hero');
     }
-    panel.append(banner);
+    const primary = node('div', '', 'hub-primary');
+    panel.append(banner, primary);
     if (key === 'personality') {
       const shortcuts = node('nav', '', 'personality-shortcuts');
       shortcuts.setAttribute('aria-label', 'Personality sections');
@@ -196,9 +199,7 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
         shortcuts.append(shortcut);
       }
       const rows = node('div', '', 'personality-options');
-      const library = node('details', '', 'follow-up');
-      library.append(node('summary', 'Explore the library'), pageLink('Browse resources', viewRoutes.library, 'topic-page-link'));
-      rows.append(assessment(), library);
+      rows.append(assessment(), pageLink('Browse the Library', viewRoutes.library, 'topic-page-link'));
       panel.append(shortcuts, rows);
     }
     if (key === 'reflection') {
@@ -206,8 +207,13 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
         everydayTools({ guide: 'feeling', node, button }));
     }
     if (key === 'skills') panel.append(everydayTools({ guide: 'skills', node, button, addPractice: state.plan ? addPractice : undefined }));
-    if (key === 'learning') panel.append(learningCards({ node, skills, practiceFor }));
-    if (key === 'values') panel.append(pageLink(selected.length === 5 ? 'Revisit the values exercise' : 'Start the values exercise', valuesExerciseRoute, 'topic-page-link'));
+    if (key === 'learning') {
+      primary.append(pageLink('Open the Library', viewRoutes.library, 'topic-page-link'));
+      const resources = disclosure(node, 'Learning ideas and resources');
+      resources.append(learningCards({ node, skills, practiceFor }));
+      panel.append(resources);
+    }
+    if (key === 'values') primary.append(pageLink(selected.length === 5 ? 'Revisit the values exercise' : 'Start the values exercise', valuesExerciseRoute, 'topic-page-link'));
     if (key === 'values' && selected.length === 5) {
       const badges = node('ul', '', 'value-badges');
       for (const value of selected) badges.append(node('li', value));
@@ -221,7 +227,8 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
         node('p', 'Play: Put on one song and shoot baskets, dance, or sketch until it ends.'),
         node('p', 'Confidence: Ask one question you’d usually keep to yourself. Notice what happens.'),
         pageLink('Browse the resource library', viewRoutes.library, 'topic-page-link'));
-      const write = disclosure(node, 'Reflect on an activity');
+      const write = node('section', '', 'hub-activity-journal');
+      write.append(node('h2', 'Reflect on an activity'));
       const journal = node('form');
       const input = (parent, prompt, tag) => {
         const label = node('label', prompt);
@@ -232,10 +239,10 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
       };
       const name = input(journal, 'Give your activity a name', 'input');
       name.required = true;
-      const note = input(journal, 'Tell the story in your own words (optional)', 'textarea');
-      const guided = disclosure(node, 'Dig deeper with five questions');
-      const answers = activityPrompts.map(q => [q, input(guided, q, 'textarea')]);
-      journal.append(guided, node('button', 'Save my reflection'));
+      const details = disclosure(node, 'Add notes or answer guided questions');
+      const note = input(details, 'Tell the story in your own words (optional)', 'textarea');
+      const answers = activityPrompts.map(q => [q, input(details, q, 'textarea')]);
+      journal.append(node('button', 'Save my reflection'), details);
       journal.onsubmit = event => {
         event.preventDefault();
         if (!name.value.trim()) { name.focus(); return; }
@@ -247,16 +254,14 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
           notify('Reflection saved.');
         }
       };
-      write.append(node('p', 'Write a quick note or open the questions. When you request an AI overview, you choose which answers it can use.'), journal);
-      panel.append(examples, write);
+      write.append(journal);
+      primary.append(write);
+      panel.append(examples);
       if (state.plan) {
         const plan = disclosure(node, 'See activities from my plan');
         plan.append(activities());
         panel.append(plan);
       }
-    }
-    if (key === 'learning') {
-      panel.append(pageLink('Dig deeper in the Library', viewRoutes.library, 'topic-page-link'));
     }
     if (entries.length) {
       const source = node('details', '', 'follow-up');
@@ -305,34 +310,34 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
 
     const prompts = saved.accepted?.questions?.length === 5 ? saved.accepted.questions : defaults;
     const form = node('form', '', 'hub-questions');
-    const questionTitle = node(key === 'personality' ? 'h2' : 'h3', key === 'personality' ? 'Questions' : 'Five questions to explore');
+    const questionTitle = node('h2', key === 'personality' ? 'Questions' : 'Questions to explore');
+    const more = disclosure(node, 'More questions');
     if (key === 'personality') {
       questionTitle.id = 'personality-questions';
       questionTitle.tabIndex = -1;
       form.append(questionTitle, pageLink('Choose your questionnaire', viewRoutes.journey, 'topic-page-link'));
     } else form.append(questionTitle);
-    const responses = prompts.map((question) => {
+    const responses = prompts.map((question, index) => {
       const label = node('label', question);
       const input = node('textarea', '');
       input.value = saved.responses?.[question] || '';
       label.append(input);
-      form.append(label);
+      (index ? more : form).append(label);
       return [question, input];
     });
-    form.append(node('button', 'Save my answers'));
+    form.append(node('button', 'Save my answers'), more);
     form.onsubmit = (event) => {
       event.preventDefault();
       const previous = read().planHub?.[key]?.responses || {};
       const newAnswers = Object.fromEntries(responses.map(([question, input]) => [question, input.value.trim()]));
       if (persist({ responses: { ...previous, ...newAnswers } })) notify('Answers saved.');
     };
-    const questionsBox = disclosure(node, 'Explore five follow-up questions');
-    if (key === 'personality') {
-      questionTitle.removeAttribute('id');
-      questionsBox.firstChild.id = 'personality-questions';
+    if (key !== 'activities') primary.append(form);
+    else if (saved.accepted || Object.keys(saved.responses || {}).length) {
+      const questionsBox = disclosure(node, 'Explore follow-up questions');
+      questionsBox.append(form);
+      panel.append(questionsBox);
     }
-    questionsBox.append(form);
-    if (key !== 'activities' || saved.accepted || Object.keys(saved.responses || {}).length) panel.append(questionsBox);
     if (key === 'personality') {
       const activityTitle = node('h2', 'Activities');
       activityTitle.id = 'personality-activities';
