@@ -8,11 +8,14 @@ export function timelineFor(state) {
   const steps = taskList(plan, state.planTargets || [], state.roadmap, state.growth?.confirmed).map(task => {
     const previous = prior.get(task.id);
     const sameGoal = previous?.goal === task.goal;
-    const generated = { action: task.detail, today: task.firstAction };
+    const generated = {
+      title: task.title, skill: task.skill, evidence: task.evidence, action: task.detail, today: task.firstAction
+    };
+    const current = key => sameGoal && previous.generated?.[key] === generated[key] ?
+      previous[key] ?? generated[key] : generated[key];
     return {
-      id: task.id, title: task.title, days: task.days, goal: task.goal, skill: task.skill, evidence: task.evidence,
-      action: sameGoal && previous.generated?.action === generated.action ? previous.action : generated.action,
-      today: sameGoal && previous.generated?.today === generated.today ? previous.today : generated.today,
+      id: task.id, days: task.days, goal: task.goal, title: current('title'), skill: current('skill'),
+      evidence: current('evidence'), action: current('action'), today: current('today'),
       generated,
       done: Boolean((!previous || sameGoal) && (state.completedActivities?.[task.id] ?? previous?.done)),
       notes: (!previous || sameGoal) ? (state.activityNotes?.[task.id] ?? previous?.notes ?? '') : ''
@@ -85,7 +88,7 @@ export function projectTracker({read,save,node,button,notify,aiDraft}) {
       const when=step.days.map(n=>{const d=new Date(tracker.started);d.setDate(d.getDate()+n-1);return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});}).join(' – ');
       const card=fold((step.done?'✓ ':i===current?'Up next · ':'')+when+' · '+step.title);
       card.classList.add('milestone');card.open=i===current;
-      card.append(node('p',step.action),node('strong','What I can do today'),node('p',step.today));
+      card.append(node('p',step.action,'activity-steps'),node('strong','What I can do today'),node('p',step.today));
       if (step.evidence) card.append(node('p', 'Evidence to look for · ' + step.evidence));
       const edit=fold('Capture feedback or adjust this exercise');
       const form=node('form'), action=field(form,'The exercise',step.action,true), today=field(form,'One action I control today',step.today,true);

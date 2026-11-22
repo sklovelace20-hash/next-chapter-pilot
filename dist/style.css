@@ -751,6 +751,10 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
   #discover .value-actions button { padding: 6px 10px; }
 }
 
+.activity-builder { margin-block: 0 18px; }
+.activity-builder .activity-draft, .activity-builder details { margin-block: 10px; }
+.activity-builder .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.activity-steps { white-space: pre-line; }
 .hub-primary { margin-block: 0 16px; }
 .hub-primary .hub-questions { margin-top: 12px; }
 @media (max-width: 600px) {

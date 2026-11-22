@@ -1,3 +1,4 @@
+import { activityBuilder } from './activity-builder.js';
 import { projectTracker } from './project-tracker.js';
 import { everydayTools, learningCards } from './everyday-tools.js';
 import { topicRoutes, viewRoutes, valuesExerciseRoute } from './routes.js';
@@ -183,6 +184,9 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
     }
     const primary = node('div', '', 'hub-primary');
     panel.append(banner, primary);
+    if (key === 'skills' || key === 'activities') {
+      primary.append(activityBuilder({ mode: key, read, save, node, button, notify }));
+    }
     if (key === 'personality') {
       const shortcuts = node('nav', '', 'personality-shortcuts');
       shortcuts.setAttribute('aria-label', 'Personality sections');

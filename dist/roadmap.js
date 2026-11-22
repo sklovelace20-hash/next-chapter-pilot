@@ -209,7 +209,7 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
         summary.append(node('strong', step.title),
           node('small', `Days ${step.days.join('–')} · ${status}`));
         if (multipleGoals && step.goal) summary.append(node('small', step.goal));
-        details.append(summary, node('p', step.action, 'entry'));
+        details.append(summary, node('p', step.action, 'entry activity-steps'));
         if (step.skill) details.append(node('p', 'Skill to practice · ' + step.skill));
         if (step.evidence) details.append(node('p', 'Evidence to look for · ' + step.evidence));
         if (step.today && step.today !== step.action) details.append(node('p', 'First action · ' + step.today, 'entry'));

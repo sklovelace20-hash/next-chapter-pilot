@@ -370,11 +370,11 @@ export function planActivities({ read, node, save }) {
       const current = read();
       if (!save({ ...current, completedActivities: { ...current.completedActivities, [task.id]: checkbox.checked } })) checkbox.checked = !checkbox.checked;
     };
-    label.append(checkbox, document.createTextNode(` ${task.timing} · ${task.title}`));
+    label.append(checkbox, document.createTextNode(` ${task.timing} · ${milestone?.title || task.title}`));
     const activity = milestone?.action || task.detail;
-    card.append(label, node('p', activity));
+    card.append(label, node('p', activity, 'activity-steps'));
     if (milestone?.today && milestone.today !== activity) card.append(node('p', 'First action · ' + milestone.today));
-    card.append(node('p', 'Evidence to look for · ' + task.evidence));
+    card.append(node('p', 'Evidence to look for · ' + (milestone?.evidence || task.evidence)));
     const journal = node('details', '', 'follow-up');
     journal.append(node('summary', 'Record what you learned'));
     const form = node('form', '');
