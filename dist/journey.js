@@ -1,3 +1,4 @@
+import { requestInsight } from './assessment.js';
 import { valueCards } from './value-cards.js';
 import { traits } from './discovery-content.js';
 import { personalityResults } from './personality-results.js';
@@ -273,6 +274,45 @@ export function journey({ host, read, save, node, button, notify, open, home, fi
         skill: field(element, 'What skill would help you move forward?', previous?.skill),
         action: field(element, 'What is one action you could try this week?', previous?.action)
       };
+      if (['ideas', 'unsure'].includes(state.path)) {
+        const status = node('p', '', 'inline-status');
+        status.setAttribute('role', 'status');
+        const draft = button('Draft goal and first action from my answers', async () => {
+          const goalText = target.goal.value.trim();
+          const actionText = target.action.value.trim();
+          if (goalText && actionText) {
+            status.textContent = 'Clear the field you want AI to draft.';
+            return;
+          }
+          draft.disabled = true;
+          status.textContent = 'Drafting from your earlier answers…';
+          try {
+            const context = {
+              area, goal: goalText, action: actionText,
+              acceptedSummary: state.final?.summary?.slice(0, 2400),
+              correction: state.final?.clarification?.slice(0, 500),
+              rounds: (state.reviews || []).map(review => ({
+                answers: (review.entries || []).slice(0, 10).map(([q, a]) => [q.slice(0, 100), a.slice(0, 140)]),
+                clarification: review.clarification?.slice(0, 250)
+              })),
+              values: state.valueRounds?.[2], interests: state.interests,
+              personalityNote: state.personalityNote?.slice(0, 350)
+            };
+            const result = await requestInsight({ mode: 'journey-target', input: JSON.stringify(context) });
+            if (!target.goal.value.trim()) target.goal.value = result.profile.goal.trim();
+            if (!target.action.value.trim()) target.action.value = result.profile.tryNext.trim();
+            status.textContent = target.goal.value.trim() && target.action.value.trim()
+              ? 'Review and edit your draft before saving.'
+              : result.questions[0] || 'Add more detail to the goal or first action.';
+          } catch {
+            status.textContent = 'The draft could not be generated. Try again or enter your own goal and action.';
+          } finally {
+            draft.disabled = false;
+          }
+        }, 'quiet');
+        draft.type = 'button';
+        element.append(node('p', 'Use your earlier answers and accepted summary to draft these fields with OpenAI.'), draft, status);
+      }
       if (read().assessment?.summary) {
         const status = node('p', '', 'inline-status');
         status.setAttribute('role', 'status');
