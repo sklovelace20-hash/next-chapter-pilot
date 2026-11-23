@@ -203,6 +203,17 @@ export async function reflect(request, env) {
     if (typeof draft.overview !== 'string' || !draft.overview.trim() ||
         ![draft.insights, draft.questions].every((list) => Array.isArray(list) && list.every((item) => typeof item === 'string')) ||
         !fields.every((key) => typeof draft.profile?.[key] === 'string')) throw new Error('Invalid draft');
+    if (mode === 'plan-output') {
+      let context;
+      try { context = JSON.parse(input); } catch { /* Older clients can send plain text. */ }
+      if (Array.isArray(context?.entries) && !context.entries.length &&
+          typeof context.acceptedAssessment === 'string' && context.acceptedAssessment.trim()) {
+        draft.overview = 'These observations come from your accepted report.';
+        const sentences = new Intl.Segmenter('en', { granularity: 'sentence' });
+        draft.insights = Array.from(sentences.segment(context.acceptedAssessment.trim()),
+          part => part.segment.trim()).filter(Boolean);
+      }
+    }
     if (mode === 'journey-target') {
       const { actionQuote, timingQuote } = draft;
       function sourceText(quote) {
