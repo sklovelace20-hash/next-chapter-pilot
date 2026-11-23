@@ -88,6 +88,17 @@ export async function reflect(request, env) {
       // Older clients may send plain text.
     }
   }
+  if (mode === 'activity-builder') {
+    let activity;
+    try { activity = JSON.parse(input); } catch { /* Older callers may send plain text. */ }
+    const idea = typeof activity?.idea === 'string' ? activity.idea.replace(/[‘’]/g, "'") : '';
+    const omittedSetting = /\b(?:haven't|have not|didn't|did not)\s+(?:said|specified|mentioned|decided)\s+(?:where|with whom|who)\b/i;
+    if (activity?.purpose === 'practice a skill gap' && !activity.constraints?.trim?.() &&
+        !activity.clarifications?.length && omittedSetting.test(idea)) {
+      return json({ title: '', skill: '', firstAction: '', evidence: '', steps: [],
+        questions: ['Where or with whom do you want to practice this skill?'] });
+    }
+  }
   const guidance = mode === 'personality-refresh'
     ? 'Refresh the personality summary using the supplied answer patterns and rubric. Treat them as self-reported preferences in specific situations, not ability, diagnosis, or a fixed type. Respect the person’s corrections and note context-dependent or partial results. Give one concise overview, up to three specific insights, and exactly five short open follow-up questions asking for concrete examples. If a Roadmap milestone was supplied, use profile.tryNext for one small action tied to the same goal and milestone. Preserve any relevant report-backed timing or duration. Leave profile.tryNext empty if the existing move already fits or no change is supported.'
     : mode === 'journey-round'
