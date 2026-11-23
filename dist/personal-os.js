@@ -60,7 +60,7 @@ export function personalOS(host, read, save, node, query = '') {
     overview.append(node('p', next.title), complete);
   }
   if (steps[undoIndex]?.done) {
-    const undo = node('button','Undo');
+    const undo = node('button','Undo · ' + steps[undoIndex].title);
     undo.type = 'button';
     undo.setAttribute('aria-label', 'Undo completion of ' + steps[undoIndex].title);
     undo.onclick = () => changeCompletion(undoIndex, false);

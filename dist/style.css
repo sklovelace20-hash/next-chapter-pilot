@@ -967,10 +967,11 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
 .personality-refresh > .inline-status:empty { display: none; }
 .personality-refresh h3 { margin: 14px 0 6px; }
 .personality-refresh h4 { margin-bottom: 4px; }
+#personal > h1:focus { outline: none; }
 .os-overview button { margin: 0 .8rem .4rem 0; }
 .os-overview { padding: 1rem; margin-block: 1rem; border-radius: 14px; background: #eee9ff; }
 .os-links { --branch-line: #a895bc; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 2rem; margin-block: 1rem; isolation: isolate; }
-.os-map-root { grid-column: 1 / -1; justify-self: center; border-radius: 2rem; padding: .55rem 1.2rem; background: var(--purple); color: white; font-weight: 700; }
+.os-map-root { grid-column: 1 / -1; justify-self: center; padding-block: .55rem; color: var(--purple); font-weight: 700; }
 .os-branch { position: relative; padding: .8rem; margin-top: 1rem; border: 1px solid var(--branch-line); border-radius: 1rem; background: #faf7ff; }
 .os-branch::before { content: ''; position: absolute; z-index: -1; inset: calc(-1rem - 2px) -1.1rem auto auto; width: 1rem; height: calc(50% + 1rem); border-right: 2px solid var(--branch-line); border-bottom: 2px solid var(--branch-line); }
 .os-branch:nth-of-type(even)::before { left: -1.1rem; right: auto; border-right: 0; border-left: 2px solid var(--branch-line); }

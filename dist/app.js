@@ -258,7 +258,12 @@ const startingPoint = journey({
 const resourceLibrary = library({ host: get('library'), node, button });
 const achievements = accomplishments({ host: get('accomplishments'), read: () => state, save, node, button, notify });
 function openPage(path) {
-  const { view, section, path: canonical } = pageAt(path);
+  const returning = Object.entries(state).some(([, value]) =>
+    value && (typeof value !== 'object' || Object.keys(value).length > 0));
+  const { view, section, path: canonical } = pageAt(path, returning);
+  if (location.pathname === '/' && path.split('?')[0] === '/' && canonical !== '/?explore=1') {
+    history.replaceState(null, '', canonical);
+  }
   if (view === 'fun') return show('fun', 'fun-title', canonical);
   if (view === 'welcome') return welcome.render();
   if (canonical === '/?explore=1') return show('home', 'explore-title', canonical);

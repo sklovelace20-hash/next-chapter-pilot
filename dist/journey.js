@@ -305,7 +305,9 @@ export function journey({ host, read, save, node, button, notify, open, home, fi
     const intro = node('div', '', 'section-intro');
     const title = node('h1', 'Find your starting point');
     title.tabIndex = -1;
-    intro.append(title, node('p', 'Start with as much clarity as you have today.'));
+    const results = node('a', 'View my results in Plan Hub');
+    results.href = '/plan';
+    intro.append(title, node('p', 'Start with as much clarity as you have today.'), results);
     const card = node('article', '', 'journey-card discover-card');
     const legacyIdeaStage = state.path === 'ideas' && (['quiz', 'feedback', 'areas'].includes(state.stage) ||
       (state.stage === 'finalReview' && state.reviews?.length === 1));
