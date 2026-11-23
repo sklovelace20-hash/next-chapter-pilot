@@ -5,6 +5,10 @@
   "compatibility_date": "2026-05-01",
   "workers_dev": true,
   "preview_urls": false,
+  "keep_vars": true,
+  "vars": {"AI_INVITE_HASHES": "94a4c197dc27d395b7f85b8192153303453630731554a1546c6512099a27ce4f,06240e2f70f4e6c9dc11f87cae6aa7b58edcfd97356fc4887a0bbd4db4f62070,14279237867dcd0e58cf12e5f028d47627131d109d1519e7a38b9c929da410e5,801ed0330b23f99ff3a6b85d90f6ebe7d8d26bfe8ad3669235e76bb70a930f09,5c313d9d94f23dd7094d260f079d285d5e9d876556b5ae10b176e10ea458dd55,5c502e16037d92cc0c73d7a60b54edfa2511053468fb100ac1be236e06bfd6bb"},
+  "durable_objects": {"bindings":[{"name":"AI_USAGE","class_name":"AIUsage"}]},
+  "migrations": [{"tag":"ai-usage-v1","new_sqlite_classes":["AIUsage"]}],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
