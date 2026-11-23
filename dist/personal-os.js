@@ -4,13 +4,13 @@ import { libraryResources } from './library.js';
 import { discoveryTopics, topicRoutes, viewRoutes } from './routes.js';
 
 const topics = { personality: 'Personality', values: 'Values', goals: 'Goals', activities: 'Activities', skills: 'Skills and lessons', stretch: 'Stretch assignments', learning: 'Education and learning', reflection: 'Reflections and insights' };
-const destinations = [
-  ['Today', '/'], ['Discover', viewRoutes.discover], ['Roadmap', viewRoutes.roadmap], ['Plan Hub', viewRoutes.output],
-  ['Resources', viewRoutes.library], ['Smile File', viewRoutes.accomplishments], ['Fun', viewRoutes.fun],
-  ['Starting point', viewRoutes.journey], ['Welcome', viewRoutes.welcome], ['Values exercise', '/values/exercise'],
-  ...Object.entries(topicRoutes).map(([key,url]) => [topics[key],url]),
-  ...discoveryTopics.map(([key,title]) => ['Discover · ' + title, '/discover?topic=' + key])
+const branches = [
+  ['Start here', [['Today', '/'], ['Starting point', viewRoutes.journey], ['Welcome', viewRoutes.welcome]]],
+  ['Discover', [['Discover', viewRoutes.discover], ...discoveryTopics.map(([key,title]) => ['Discover · ' + title, '/discover?topic=' + key]), ['Values exercise','/values/exercise']]],
+  ['Plan and grow', [['Roadmap', viewRoutes.roadmap], ['Plan Hub', viewRoutes.output], ...Object.entries(topicRoutes).map(([key,url]) => [topics[key],url])]],
+  ['Keep and explore', [['Resources', viewRoutes.library], ['Smile File', viewRoutes.accomplishments], ['Fun', viewRoutes.fun], ['Privacy Vault', viewRoutes.vault]]]
 ];
+
 export function personalOS(host, state, node) {
   const link = (title,url) => {
     const a = node('a',title);
@@ -50,11 +50,21 @@ export function personalOS(host, state, node) {
   for (const a of state.accomplishments || []) add('Smile File',a.title,[a.date,a.note],viewRoutes.accomplishments);
   for (const a of state.bucketList || []) add('Bucket List Bingo',a.title,a.done ? 'Completed' : 'On my list',viewRoutes.fun);
   for (const r of libraryResources) add('Resources',r.title,[r.by,r.format,r.theme,r.description],r.url);
-  const links = state.plan ? [...destinations,['Privacy Vault',viewRoutes.vault]] : destinations;
   function filter() {
     const words = search.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
     const matches = text => words.every(word=>text.toLowerCase().includes(word));
-    pages.replaceChildren(...links.filter(([name])=>matches(name)).map(([name,url])=>link(name,url)));
+    pages.replaceChildren();
+    for (const [group, shortcuts] of branches) {
+      const found = shortcuts.filter(([name,url]) => (url !== viewRoutes.vault || state.plan) && matches(group + ' ' + name));
+      if (!found.length) continue;
+      const branch = node('section','','os-branch');
+      branch.append(node('h3',group));
+      const leaves = node('div','','os-leaves');
+      leaves.append(...found.map(([name,url]) => link(name,url)));
+      branch.append(leaves);
+      pages.append(branch);
+    }
+    if (pages.childElementCount) pages.prepend(node('span','Personal OS','os-map-root'));
     records.replaceChildren();
     for (const [group,items] of groups) {
       const found = items.filter(i=>matches([group,i.title,i.body].join(' ')));
