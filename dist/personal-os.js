@@ -11,7 +11,7 @@ const branches = [
   ['Keep and explore', [['Resources', viewRoutes.library], ['Smile File', viewRoutes.accomplishments], ['Fun', viewRoutes.fun], ['Privacy Vault', viewRoutes.vault]]]
 ];
 
-export function personalOS(host, read, save, node, query = '') {
+export function personalOS(host, read, save, node, query = '', undoIndex = -1) {
   const state = read();
   const link = (title,url) => {
     const a = node('a',title);
@@ -29,21 +29,29 @@ export function personalOS(host, read, save, node, query = '') {
     node('strong', next ? 'Your next move' : 'Plan status'),
     node('p',next?.today || next?.action || (steps.length ? 'All milestones complete.' : 'Choose a goal in Plan Hub to start your roadmap.')));
   if (steps.length) overview.append(node('p',steps.filter(step=>step.done).length + ' of ' + steps.length + ' milestones complete'));
+  function changeCompletion(index, done) {
+    if (read() !== state) {
+      personalOS(host, read, save, node, search.value);
+      return;
+    }
+    const updated = steps.map((step, i) => i === index ? { ...step, done } : step);
+    if (save(withTimeline(state, { ...tracker, steps: updated }))) {
+      personalOS(host, read, save, node, search.value, done ? index : -1);
+      host.querySelector('.os-overview').focus({ preventScroll: true });
+    }
+  }
   if (next) {
     const complete = node('button','Mark next move complete');
     complete.type = 'button';
-    complete.onclick = () => {
-      if (read() !== state) {
-        personalOS(host, read, save, node, search.value);
-        return;
-      }
-      const updated = steps.map(step => step === next ? { ...step, done: true } : step);
-      if (save(withTimeline(state, { ...tracker, steps: updated }))) {
-        personalOS(host, read, save, node, search.value);
-        host.querySelector('.os-overview').focus({ preventScroll: true });
-      }
-    };
+    complete.onclick = () => changeCompletion(steps.indexOf(next), true);
     overview.append(node('p', next.title), complete);
+  }
+  if (steps[undoIndex]?.done) {
+    const undo = node('button','Undo');
+    undo.type = 'button';
+    undo.setAttribute('aria-label', 'Undo completion of ' + steps[undoIndex].title);
+    undo.onclick = () => changeCompletion(undoIndex, false);
+    overview.append(undo);
   }
   overview.tabIndex = -1;
   overview.append(link(next ? 'Open Roadmap' : 'Open Plan Hub',next ? viewRoutes.roadmap : viewRoutes.output));

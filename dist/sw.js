@@ -1,4 +1,4 @@
-const cacheName = 'next-chapter-shell-home-completion';
+const cacheName = 'next-chapter-shell-home-undo';
 const assets = ['./', './index.html', './mountain-book.webp', './style.css', './app.js', './personal-os.js', './saved-answers.js', './welcome.js', './fun.js', './fun-park.webp', './bucket-bingo.js', './planner.js', './roadmap.js', './roadmap-route.svg', './vault-crypto.js', './discovery.js', './discovery-content.js', './personality-results.js', './personality-refresh.js', './deeper.js', './growth.js', './ai-mirror.js', './evening-trail.webp', './journey.js', './journey-content.js', './value-cards.js', './plan-hub.js', './activity-builder.js', './project-tracker.js', './answer-selection.js', './library.js', './everyday-tools.js', './everyday-content.js', './everyday-trail.webp', './middle-theory-library.js', './accomplishments.js', './routes.js', './assessment.js', './hub-icons.woff2', './personality-watercolor.webp',
   './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', (event) => {
