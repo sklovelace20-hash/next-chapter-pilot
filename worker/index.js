@@ -90,9 +90,11 @@ export async function reflect(request, env) {
       // Older clients may send plain text.
     }
   }
+  let lesson = false;
   if (mode === 'activity-builder') {
     let activity;
     try { activity = JSON.parse(input); } catch { /* Older callers may send plain text. */ }
+    lesson = activity?.format === 'lesson';
     const idea = typeof activity?.idea === 'string' ? activity.idea.replace(/[‘’]/g, "'") : '';
     const omittedSetting = /\b(?:haven't|have not|didn't|did not)\s+(?:said|specified|mentioned|decided)\s+(?:where|with whom|who)\b/i;
     if (activity?.purpose === 'practice a skill gap' && !activity.constraints?.trim?.() &&
@@ -117,6 +119,7 @@ export async function reflect(request, env) {
   const coach = !mode || ['journey-round', 'journey-final', 'plan-output'].includes(mode)
     ? 'Use the warm tone of a lightly playful text coach in follow-up questions. Every follow-up must ask for a detail that changes the advice or helps the person reflect. For a low-stakes topic you may add one short wry aside after a useful question. Never add a joke as a question. Aim humor at overcomplicated plans and everyday friction. Use plain, supportive wording for sensitive or painful experiences. Keep insights, profile text, and next steps faithful to the person’s words and easy to use.'
     : '';
+  const lessonSchema = { ...activitySchema, properties: { ...activitySchema.properties, workedExample: text }, required: [...activitySchema.required, 'workedExample'] };
   const buildingActivity = mode === 'activity-builder';
   const unavailable = buildingActivity ? 'The AI activity builder is unavailable. Try again in a moment.' :
     'The AI reflection is unavailable. You can try again or keep editing your profile.';
@@ -133,8 +136,8 @@ export async function reflect(request, env) {
       headers: { Authorization: `Bearer ${env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
       signal: AbortSignal.timeout(30000),
       body: JSON.stringify({
-        model: env.OPENAI_REFLECTION_MODEL || 'gpt-4.1-mini', store: false, instructions: buildingActivity ? activityInstruction : [instruction, guidance, coach].filter(Boolean).join('\n'),
-        input: assessmentInput, max_output_tokens: maxOutputTokens, text: { format: { type: 'json_schema', name: buildingActivity ? 'activity' : 'reflection', strict: true, schema: buildingActivity ? activitySchema : schema } }
+        model: env.OPENAI_REFLECTION_MODEL || 'gpt-4.1-mini', store: false, instructions: lesson ? activityInstruction + '\nUse workedExample to give the actual finished example a learner could imitate, in their setting. Leave it empty when asking questions. Use steps to explain the technique, assign an independent attempt, and check it.' : buildingActivity ? activityInstruction : [instruction, guidance, coach].filter(Boolean).join('\n'),
+        input: assessmentInput, max_output_tokens: maxOutputTokens, text: { format: { type: 'json_schema', name: buildingActivity ? 'activity' : 'reflection', strict: true, schema: lesson ? lessonSchema : buildingActivity ? activitySchema : schema } }
       })
     });
     if (!response.ok) {
@@ -157,6 +160,10 @@ export async function reflect(request, env) {
           (!draft.questions.length && (!filled(draft.title) || !filled(draft.firstAction) ||
             !filled(draft.evidence) || draft.steps.length < 2 || draft.steps.length > 5))) {
         throw new Error('Invalid activity');
+      }
+      if (lesson && !draft.questions.length) {
+        if (!filled(draft.workedExample)) throw new Error('Missing lesson example');
+        draft.steps.splice(1, 0, 'Worked example: ' + draft.workedExample.trim());
       }
       return json(draft);
     }
