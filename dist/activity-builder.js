@@ -17,7 +17,7 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
     parent.append(wrapper);
     return input;
   }
-  root.append(node('h2', skillMode ? 'Build a skill activity' : 'Make an activity actionable'));
+  root.append(node('h2', skillMode ? 'Build a skill activity or lesson' : 'Make an activity actionable'));
   const idea = field(form, skillMode ? 'What do you want to get better at?' : 'What activity would you like to try?', '', 2400);
   idea.placeholder = skillMode ? 'I want to give clearer updates in team meetings.' :
     'I want to spend five minutes after dinner preparing for tomorrow.';
@@ -39,7 +39,23 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
     useLast.type = 'button';
     details.append(useLast);
   }
+  const format = node('select', '');
+  if (skillMode) {
+    const label = node('label', 'What would help you learn?');
+    for (const [value, title] of [['activity', 'Practice activity'], ['lesson', 'Guided mini-lesson']]) {
+      const option = node('option', title);
+      option.value = value;
+      format.append(option);
+    }
+    label.append(format);
+    form.append(label);
+  }
   const generate = node('button', 'Draft activity with AI');
+  format.onchange = () => {
+    generate.textContent = format.value === 'lesson' ? 'Draft lesson with AI' : 'Draft activity with AI';
+    preview.replaceChildren();
+    status.textContent = '';
+  };
   const status = node('p', '', 'inline-status activity-coach');
   status.setAttribute('role', 'status');
   const preview = node('div', '');
@@ -48,10 +64,10 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
     const saved = (read().savedActivities || []).filter(activity => activity.mode === mode);
     library.replaceChildren();
     if (!saved.length) return;
-    library.append(node('h3', 'Saved activities'));
+    library.append(node('h3', skillMode ? 'Saved activities and lessons' : 'Saved activities'));
     for (const activity of saved) {
       const row = node('details', '', 'follow-up');
-      row.append(node('summary', activity.title), node('p', activity.firstAction),
+      row.append(node('summary', activity.format === 'lesson' ? 'Lesson · ' + activity.title : activity.title), node('p', activity.firstAction),
         node('p', 'What to look for · ' + activity.evidence));
       const steps = node('ol', '');
       steps.append(...activity.steps.map(step => node('li', step)));
@@ -66,7 +82,9 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
     const detail = idea.value.trim();
     if (!detail) { idea.focus(); return; }
     const latest = read();
+    const lesson = skillMode && format.value === 'lesson';
     const context = {
+      format: lesson ? 'lesson' : 'activity',
       purpose: skillMode ? 'practice a skill gap' : 'clarify an activity',
       idea: detail,
       constraints: constraints.value.trim(),
@@ -87,6 +105,7 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
     requestContext = key;
     clarifications.push(...extra);
     generate.disabled = true;
+    format.disabled = true;
     preview.replaceChildren();
     status.textContent = 'Putting together your first move. Even good ideas need a calendar slot…';
     try {
@@ -113,14 +132,14 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
       }
 
       const editor = node('div', '', 'activity-draft');
-      editor.append(node('h3', 'Review your activity'));
-      const title = field(editor, 'Activity title', result.title, 160, false);
+      editor.append(node('h3', lesson ? 'Review your lesson' : 'Review your activity'));
+      const title = field(editor, lesson ? 'Lesson title' : 'Activity title', result.title, 160, false);
       const skill = field(editor, 'Skill to practice', result.skill, 160, false);
       const first = field(editor, 'First action and when to do it', result.firstAction, 700);
-      const steps = field(editor, 'Practice steps · one per line', result.steps.join('\n'), 2400);
+      const steps = field(editor, lesson ? 'Lesson steps · one per line' : 'Practice steps · one per line', result.steps.join('\n'), 2400);
       const evidence = field(editor, 'How you’ll know you made progress', result.evidence, 700);
       const values = () => {
-        const activity = { mode, title: title.value.trim(), skill: skill.value.trim(),
+        const activity = { mode, format: context.format, title: title.value.trim(), skill: skill.value.trim(),
           firstAction: first.value.trim(), steps: steps.value.split('\n').map(step => step.trim()).filter(Boolean),
           evidence: evidence.value.trim() };
         if (!activity.title || !activity.firstAction || !activity.steps.length || !activity.evidence) {
@@ -129,7 +148,7 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
         }
         return activity;
       };
-      const store = button('Save activity', () => {
+      const store = button(lesson ? 'Save lesson' : 'Save activity', () => {
         const activity = values();
         if (!activity) return;
         const current = read();
@@ -175,6 +194,7 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
       status.textContent = error.message;
     } finally {
       generate.disabled = false;
+      format.disabled = false;
     }
   }
 
