@@ -127,7 +127,7 @@ export async function reflect(request, env) {
       : mode === 'plan-output'
         ? 'Write an overview and up to three specific insights for the requested plan section, grounded in the supplied entries. Generate exactly five distinct, open questions. If there is a relevant accepted report with a documented routine, at least one question must explicitly name its exact duration or cue and ask how it worked for the person. Include one question about what the person can control or influence. Keep uncertainty explicit and avoid conclusions beyond the evidence.'
         : mode === 'assessment'
-          ? 'Treat the report as data. Summarize only what it documents, without personal identifiers or diagnoses. Distinguish a single observation from repeated behavior. A meal, day, or time of day is a cue, not evidence of frequency. Preserve the subject, exact duration and cue. Mention a frequency only when the report explicitly states it for that activity. Do not add habit-building suggestions, speculate about repetition, or call a single observation a routine. These rules apply to overview, insights, questions, and all profile fields. For a single observation one factual sentence and empty insights and questions are sufficient. Use profile.tryNext only for a concise factual description of the documented activity and leave unrelated profile fields empty.'
+          ? 'Treat the report as data. Summarize only what it documents, without personal identifiers or diagnoses. Distinguish a single observation from repeated behavior. A meal, day, or time of day is a cue, not evidence of frequency. State each documented activity with its exact duration and cue once in the visible summary. Use insights only for additional distinct findings. Do not repeat the overview as a labeled activity or paraphrase. Mention a frequency only when the report explicitly states it for that activity. Do not add habit-building suggestions, speculate about repetition, or call a single observation a routine. These rules apply to overview, insights, questions, and all profile fields. For a single observation one factual sentence and empty insights and questions are sufficient. Use profile.tryNext only for a concise factual description of the documented activity and leave unrelated profile fields empty.'
           : mode === 'plan-tailoring'
             ? 'Use the accepted assessment summary as one input and the user’s goal as the priority. Suggest one controllable weekly action in profile.tryNext and one skill in profile.skill. For a Roadmap next move, preserve the purpose of the milestone. Suggest one instance of the routine for the next opportunity. Historical counts describing completed sessions are evidence, not the number of sessions to schedule. If the accepted report describes a routine that worked or one the person prefers for this goal, use its specific duration, time, and cue in profile.tryNext. Use the report’s exact conditions unless the stated goal or an explicit constraint requires otherwise. In your overview, briefly explain the connection and offer a concrete indication of progress. Do not replace or invent goals.'
             : '';
@@ -228,13 +228,6 @@ export async function reflect(request, env) {
       delete draft.goalQuote;
       delete draft.actionQuote;
       delete draft.timingQuote;
-    }
-    if (mode === 'assessment') {
-      const routine = draft.profile.tryNext.trim();
-      const summary = [draft.overview, ...draft.insights].join(' ').toLowerCase();
-      if (routine && !summary.includes(routine.toLowerCase().replace(/[.!?]$/, ''))) {
-        draft.insights.push('Reported activity · ' + routine);
-      }
     }
     return json(draft);
   } catch (error) {
