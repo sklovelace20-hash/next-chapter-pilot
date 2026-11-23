@@ -967,6 +967,7 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
 .personality-refresh > .inline-status:empty { display: none; }
 .personality-refresh h3 { margin: 14px 0 6px; }
 .personality-refresh h4 { margin-bottom: 4px; }
+.os-overview button { margin: 0 .8rem .4rem 0; }
 .os-overview { padding: 1rem; margin-block: 1rem; border-radius: 14px; background: #eee9ff; }
 .os-links { --branch-line: #a895bc; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 2rem; margin-block: 1rem; isolation: isolate; }
 .os-map-root { grid-column: 1 / -1; justify-self: center; border-radius: 2rem; padding: .55rem 1.2rem; background: var(--purple); color: white; font-weight: 700; }

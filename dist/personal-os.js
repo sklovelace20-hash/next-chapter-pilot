@@ -1,5 +1,5 @@
 import { mirrorSources } from './growth.js';
-import { timelineFor } from './project-tracker.js';
+import { timelineFor, withTimeline } from './project-tracker.js';
 import { libraryResources } from './library.js';
 import { discoveryTopics, topicRoutes, viewRoutes } from './routes.js';
 
@@ -11,7 +11,8 @@ const branches = [
   ['Keep and explore', [['Resources', viewRoutes.library], ['Smile File', viewRoutes.accomplishments], ['Fun', viewRoutes.fun], ['Privacy Vault', viewRoutes.vault]]]
 ];
 
-export function personalOS(host, state, node) {
+export function personalOS(host, read, save, node, query = '') {
+  const state = read();
   const link = (title,url) => {
     const a = node('a',title);
     a.href = url;
@@ -20,16 +21,35 @@ export function personalOS(host, state, node) {
   };
   const title = node('h1','Personal OS');
   title.tabIndex = -1;
-  const steps = timelineFor(state)?.steps || [];
+  const tracker = timelineFor(state);
+  const steps = tracker?.steps || [];
   const next = steps.find(step => !step.done);
   const overview = node('section','','os-overview');
   overview.append(node('h2',state.plan?.goal || 'Your plan at a glance'),
     node('strong', next ? 'Your next move' : 'Plan status'),
     node('p',next?.today || next?.action || (steps.length ? 'All milestones complete.' : 'Choose a goal in Plan Hub to start your roadmap.')));
   if (steps.length) overview.append(node('p',steps.filter(step=>step.done).length + ' of ' + steps.length + ' milestones complete'));
+  if (next) {
+    const complete = node('button','Mark next move complete');
+    complete.type = 'button';
+    complete.onclick = () => {
+      if (read() !== state) {
+        personalOS(host, read, save, node, search.value);
+        return;
+      }
+      const updated = steps.map(step => step === next ? { ...step, done: true } : step);
+      if (save(withTimeline(state, { ...tracker, steps: updated }))) {
+        personalOS(host, read, save, node, search.value);
+        host.querySelector('.os-overview').focus({ preventScroll: true });
+      }
+    };
+    overview.append(node('p', next.title), complete);
+  }
+  overview.tabIndex = -1;
   overview.append(link(next ? 'Open Roadmap' : 'Open Plan Hub',next ? viewRoutes.roadmap : viewRoutes.output));
   const search = node('input','');
   search.type = 'search';
+  search.value = query;
   const label = node('label','Search your information, resources, and pages');
   label.append(search);
   const pages = node('nav','','os-links');

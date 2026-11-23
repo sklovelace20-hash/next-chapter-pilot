@@ -272,7 +272,7 @@ const output = planHub({ host: get('output'), read: () => state, save, node, but
   accomplishments: () => achievements.listing({ all: true }),
   openPage, openAccomplishments: () => tools.go('accomplishments'), openLibrary: () => tools.go('library'),
   planSettings: () => tools.planSettings(), assessment: showAssessment, refreshPersonality, addPractice: (title, practice) => applyPractice(title, practice, 'practice', true) });
-const tools = workspace({ get, show, read: () => state, save, node, button, notify, dashboard, personal: () => personalOS(get('personal'), state, node), discover: (section) => section ? discover.open(section) : discover.render(), beginVisit: deeper.reset, output: output.render, library: resourceLibrary.render, accomplishments: achievements.render });
+const tools = workspace({ get, show, read: () => state, save, node, button, notify, dashboard, personal: () => personalOS(get('personal'), () => state, save, node), discover: (section) => section ? discover.open(section) : discover.render(), beginVisit: deeper.reset, output: output.render, library: resourceLibrary.render, accomplishments: achievements.render });
 
 function dashboard() {
   if (!state.plan) return show('home', 'home-title');
