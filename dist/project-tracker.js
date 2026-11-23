@@ -17,6 +17,7 @@ export function timelineFor(state) {
       id: task.id, days: task.days, goal: task.goal, title: current('title'), skill: current('skill'),
       evidence: current('evidence'), action: current('action'), today: current('today'),
       generated,
+      homeUndo: Boolean(sameGoal && previous?.homeUndo),
       done: Boolean((!previous || sameGoal) && (state.completedActivities?.[task.id] ?? previous?.done)),
       notes: (!previous || sameGoal) ? (state.activityNotes?.[task.id] ?? previous?.notes ?? '') : ''
     };
@@ -29,6 +30,10 @@ export function timelineFor(state) {
 }
 
 export function withTimeline(state, tracker) {
+  if (tracker.steps?.some(step => step.homeUndo && !step.done)) {
+    tracker = { ...tracker, steps: tracker.steps.map(step =>
+      step.homeUndo && !step.done ? { ...step, homeUndo: false } : step) };
+  }
   if (tracker.source !== 'plan') return { ...state, projectTracker: tracker };
   const completedActivities = { ...state.completedActivities };
   const activityNotes = { ...state.activityNotes };

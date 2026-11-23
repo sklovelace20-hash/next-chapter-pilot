@@ -11,7 +11,7 @@ const branches = [
   ['Keep and explore', [['Resources', viewRoutes.library], ['Smile File', viewRoutes.accomplishments], ['Fun', viewRoutes.fun], ['Privacy Vault', viewRoutes.vault]]]
 ];
 
-export function personalOS(host, read, save, node, query = '', undoIndex = -1) {
+export function personalOS(host, read, save, node, query = '') {
   const state = read();
   const link = (title,url) => {
     const a = node('a',title);
@@ -23,6 +23,7 @@ export function personalOS(host, read, save, node, query = '', undoIndex = -1) {
   title.tabIndex = -1;
   const tracker = timelineFor(state);
   const steps = tracker?.steps || [];
+  const undoIndex = steps.findIndex(step => step.done && step.homeUndo);
   const next = steps.find(step => !step.done);
   const overview = node('section','','os-overview');
   overview.append(node('h2',state.plan?.goal || 'Your plan at a glance'),
@@ -34,9 +35,12 @@ export function personalOS(host, read, save, node, query = '', undoIndex = -1) {
       personalOS(host, read, save, node, search.value);
       return;
     }
-    const updated = steps.map((step, i) => i === index ? { ...step, done } : step);
+    const updated = steps.map((step, i) => {
+      if (i === index) return { ...step, done, homeUndo: done };
+      return step.homeUndo ? { ...step, homeUndo: false } : step;
+    });
     if (save(withTimeline(state, { ...tracker, steps: updated }))) {
-      personalOS(host, read, save, node, search.value, done ? index : -1);
+      personalOS(host, read, save, node, search.value);
       host.querySelector('.os-overview').focus({ preventScroll: true });
     }
   }
