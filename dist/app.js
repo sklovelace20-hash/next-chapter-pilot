@@ -1,3 +1,4 @@
+import { personalOS } from './personal-os.js';
 import { savedAnswers } from './saved-answers.js';
 import { bucketBingo } from './bucket-bingo.js';
 import { clearReports, assessmentPanel, requestInsight } from './assessment.js';
@@ -89,6 +90,7 @@ function save(next) {
 
 function show(id, focus, path = viewRoutes[id] || '/') {
   const coach = {
+    personal: 'What do you need today? Find it here, then get on with the good part.',
     home: 'Pick one thing you’re curious about. That counts as starting.',
     dashboard: 'What’s one thing you actually tried? The messy version counts.',
     discover: 'Start with the question that made you pause. That one usually has a story.',
@@ -106,7 +108,7 @@ function show(id, focus, path = viewRoutes[id] || '/') {
   if (id !== 'vault' && !get('vault').hidden && get('vault').hasChildNodes()) tools.lock();
   for (const page of ['home', 'welcome', 'setup', 'editor', 'journey', 'fun', ...tools.viewIds]) get(page).hidden = page !== id;
   for (const tab of get('workspace-nav').querySelectorAll('button')) {
-    tab.hidden = !state.plan && !['dashboard', 'discover', 'output', 'roadmap', 'library', 'accomplishments', 'fun'].includes(tab.dataset.view);
+    tab.hidden = !state.plan && !['personal', 'dashboard', 'discover', 'output', 'roadmap', 'library', 'accomplishments', 'fun'].includes(tab.dataset.view);
     if (tab.dataset.view === 'dashboard') tab.textContent = state.plan ? 'Today' : 'Home';
   }
   for (const tab of get('workspace-nav').querySelectorAll('button')) {
@@ -270,7 +272,7 @@ const output = planHub({ host: get('output'), read: () => state, save, node, but
   accomplishments: () => achievements.listing({ all: true }),
   openPage, openAccomplishments: () => tools.go('accomplishments'), openLibrary: () => tools.go('library'),
   planSettings: () => tools.planSettings(), assessment: showAssessment, refreshPersonality, addPractice: (title, practice) => applyPractice(title, practice, 'practice', true) });
-const tools = workspace({ get, show, read: () => state, save, node, button, notify, dashboard, discover: (section) => section ? discover.open(section) : discover.render(), beginVisit: deeper.reset, output: output.render, library: resourceLibrary.render, accomplishments: achievements.render });
+const tools = workspace({ get, show, read: () => state, save, node, button, notify, dashboard, personal: () => personalOS(get('personal'), state, node), discover: (section) => section ? discover.open(section) : discover.render(), beginVisit: deeper.reset, output: output.render, library: resourceLibrary.render, accomplishments: achievements.render });
 
 function dashboard() {
   if (!state.plan) return show('home', 'home-title');

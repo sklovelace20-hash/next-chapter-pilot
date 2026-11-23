@@ -10,6 +10,7 @@ export const topicRoutes = {
 };
 
 export const viewRoutes = {
+  personal: '/personal-os',
   welcome: '/welcome',
   fun: '/fun',
   journey: '/start',

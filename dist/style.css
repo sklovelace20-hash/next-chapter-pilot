@@ -967,3 +967,8 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
 .personality-refresh > .inline-status:empty { display: none; }
 .personality-refresh h3 { margin: 14px 0 6px; }
 .personality-refresh h4 { margin-bottom: 4px; }
+.os-overview { padding: 1rem; margin-block: 1rem; border-radius: 14px; background: #eee9ff; }
+.os-links { display: flex; flex-wrap: wrap; gap: .45rem; margin-block: .75rem 1rem; }
+.os-links a { padding: .4rem .65rem; border: 1px solid var(--line); border-radius: .6rem; }
+.os-record { padding-block: .65rem; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.os-record p { margin: .25rem 0; white-space: pre-line; }

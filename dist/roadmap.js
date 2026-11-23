@@ -7,7 +7,7 @@ import { timelineFor, withTimeline } from './project-tracker.js';
 
 export const vaultKey = 'next-chapter-encrypted-vault-v1';
 export const cadenceOptions = [[3, 'Every 3 days'], [7, 'Weekly'], [14, 'Every 2 weeks'], [30, 'Monthly']];
-const viewIds = ['dashboard', 'roadmap', 'vault', 'discover', 'output', 'library', 'accomplishments'];
+const viewIds = ['personal', 'dashboard', 'roadmap', 'vault', 'discover', 'output', 'library', 'accomplishments'];
 const day = 86400000;
 const formatDate = (value) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(value);
 
@@ -16,7 +16,7 @@ export function nextCheckIn(state) {
   return new Date(new Date(state.reviews.at(-1)?.date || state.started).getTime() + interval * day);
 }
 
-export function workspace({ get, show, read, save, node, button, notify, dashboard, discover, beginVisit, output, library, accomplishments }) {
+export function workspace({ get, show, read, save, node, button, notify, dashboard, personal, discover, beginVisit, output, library, accomplishments }) {
   let passphrase = '';
   let notes = [];
   let vaultOperation = 0;
@@ -43,6 +43,7 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
   function go(view, { section, path } = {}) {
     if (view !== 'vault') lock();
     if (view === 'dashboard') return dashboard();
+    if (view === 'personal') personal();
     if (view === 'discover') discover(section);
     if (view === 'output') output(section);
     if (view === 'library') library();
