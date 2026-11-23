@@ -177,7 +177,11 @@ export async function reflect(request, env) {
           !draft.observations.every(item => typeof item === 'string' && item.trim())) {
         throw new Error('Missing report observations');
       }
-      const observations = [...new Set(draft.observations.map(item => item.trim()))];
+      const sentences = draft.observations.map(item => {
+        const sentence = item.trim().replace(/^[a-z]/, letter => letter.toUpperCase());
+        return /[.!?…][”’"')]*$/.test(sentence) ? sentence : sentence.replace(/[,;:]+$/, '') + '.';
+      });
+      const observations = [...new Set(sentences)];
       return json({ overview: observations.join(' '), insights: [], questions: [],
         profile: Object.fromEntries(fields.map(key => [key, ''])) });
     }
