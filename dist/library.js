@@ -169,7 +169,7 @@ export function library({ host, node, button }) {
     const intro = node('div', '', 'section-intro topic-intro topic-learning library-intro');
     const heading = node('h1', 'Resources');
     heading.tabIndex = -1;
-    intro.append(heading, node('p', 'Find books, listening, and practical tools.'));
+    intro.append(heading, node('p', 'Find a book, podcast, or tool for what you need today. The rest can stay on the shelf.'));
     const nav = node('nav', '', 'library-sections');
     nav.setAttribute('aria-label', 'Resource sections');
     const sectionButtons = sections.map(([title, formats]) => {
@@ -252,7 +252,7 @@ export function library({ host, node, button }) {
         category.append(topics);
         return category;
       }));
-      count.textContent = results.length ? results.length + ' resources' : 'No matching resources. Try a different search or clear the filters.';
+      count.textContent = results.length ? results.length + ' resources' : 'Nothing on that shelf. Try a different search or clear the filters.';
     }
 
     function refresh() {

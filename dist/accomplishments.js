@@ -67,7 +67,7 @@ export function accomplishments({ host, read, save, node, button, notify }) {
     const intro = node('div', '', 'section-intro topic-intro topic-goals');
     const title = node('h1', 'Smile File');
     title.tabIndex = -1;
-    intro.append(title, node('p', 'Save a win, a kind word, or a moment you want to remember.'));
+    intro.append(title, node('p', 'What went right today? Save a win or a kind word. Small wins get full credit.'));
     const card = node('article', '', 'accomplishment-card');
     const addTitle = node('h2', entry ? 'Edit a win' : 'Add a win');
     addTitle.tabIndex = -1;

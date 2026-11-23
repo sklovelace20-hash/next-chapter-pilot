@@ -81,7 +81,7 @@ export function journey({ host, read, save, node, button, notify, open, home, fi
     element.append(action);
   }
   function areaPicker(card, state) {
-    card.append(node('h2', 'Which parts of life are on your mind?'), node('p', 'Choose any that feel relevant, or continue without choosing.'));
+    card.append(node('h2', 'Which parts of life are on your mind?'), node('p', 'Pick what’s on your mind today. Skipping is also a perfectly respectable move.'));
     picks(card, areas, state.interests || [], 0, areas.length, (interests) => change({ interests, stage: 'values' }));
   }
   function valuesRound(card, state) {
@@ -156,7 +156,7 @@ export function journey({ host, read, save, node, button, notify, open, home, fi
   }
   function review(card, state, final) {
     const heading = final ? 'What stands out across your answers' : 'Review what you shared';
-    card.append(node('h2', heading), node('p', 'Does this fit? Accept the summary as written or edit it in your own words.'));
+    card.append(node('h2', heading), node('p', 'Would you say it this way? Keep what fits and edit anything that sounds like it belongs to somebody else.'));
     const initial = localSummary(state, final);
     let summary = initial;
     let follow = [];

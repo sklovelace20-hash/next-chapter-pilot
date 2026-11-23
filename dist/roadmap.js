@@ -108,7 +108,7 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
     banner.append(heading, planHub, map);
     guide.append(banner);
     if (!plan) {
-      guide.append(node('p', 'Choose a goal in Plan Hub to see your next move and track milestones.'));
+      guide.append(node('p', 'Pick one goal in Plan Hub and your next move will show up here. World domination can wait.'));
       get('roadmap').replaceChildren(guide);
       return;
     }
@@ -135,7 +135,7 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
       node('p', complete ? 'You’ve completed every milestone in this plan.' : current?.today || current?.action || plan.action));
     if (current?.evidence) next.append(node('p', 'Track · ' + current.evidence));
     if (current) next.append(button('Mark milestone complete', () => {
-      if (saveStep(active, { done: true })) notify('Milestone complete. Your next move is ready.');
+      if (saveStep(active, { done: true })) notify('Milestone done. Take the win. Your next move is ready.');
     }));
     const progressCard = node('section', '', 'route-progress');
     progressCard.append(node('h2', 'Milestone progress'));

@@ -446,7 +446,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     const header = node('div', '', `section-intro topic-intro topic-${current}`);
     const heading = node('h1', 'Discover what drives you');
     heading.tabIndex = -1;
-    header.append(heading, node('p', 'Choose one area to explore at your own pace.', 'discover-intro-copy'));
+    header.append(heading, node('p', 'Pick the topic you’re most curious about. There’s no prize for opening all six.', 'discover-intro-copy'));
     const menu = node('nav', '', 'discover-menu');
     menu.setAttribute('aria-label', 'Discovery topics');
     for (const [key, title] of discoveryTopics) {

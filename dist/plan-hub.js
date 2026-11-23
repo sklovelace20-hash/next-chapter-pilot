@@ -108,7 +108,7 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
     const intro = node('div', '', 'section-intro topic-intro topic-plan');
     const heading = node('h1', 'Plan Hub');
     heading.tabIndex = -1;
-    intro.append(heading, node('p', 'Shape your goal, choose your exercises, and capture what you learn.'));
+    intro.append(heading, node('p', 'Pick a goal, try a small exercise, and jot down what happened. A plan can start with one good move.'));
     const tools = node('div', '', 'hub-tools');
     function toolCard(label, icon, content) {
       const box = node('details', '', 'hub-tool');
@@ -331,6 +331,9 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
       const label = node('label', question);
       const input = node('textarea', '');
       input.value = saved.responses?.[question] || '';
+      if (!index && ['goals', 'stretch', 'learning'].includes(key)) {
+        input.placeholder = 'One real example beats a TED Talk.';
+      }
       label.append(input);
       (index ? more : form).append(label);
       return [question, input];

@@ -752,6 +752,11 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
 }
 
 .activity-builder { margin-block: 0 18px; }
+.activity-coach:not(:empty) {
+  padding: 8px 12px;
+  border-inline-start: 3px solid currentColor;
+  border-radius: 6px;
+}
 .activity-builder .activity-draft, .activity-builder details { margin-block: 10px; }
 .activity-builder .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .activity-steps { white-space: pre-line; }

@@ -3,7 +3,7 @@ export function aiMirror({ sources, assessmentSummary, node, button, accept, edi
   const card = node('article', '', 'discover-card');
   card.append(node('h2', 'AI reflection'));
   if (!sources.length && !assessmentSummary) {
-    card.append(node('p', 'Add a few answers to see what the AI understood.'));
+    card.append(node('p', 'Start with a few honest answers. Rough drafts are excellent raw material.'));
     return card;
   }
   const chooser = node('details', '', 'follow-up');

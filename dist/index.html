@@ -42,7 +42,7 @@
 <form id="questions"><h1 id="question" tabindex="-1"></h1><div id="fields"></div><div class="actions"><button class="quiet" type="button" id="back">Back</button><button id="next">Continue</button></div></form>
 </section>
 <section id="editor" class="panel" hidden>
-<p class="eyebrow">YOUR PLAN</p><h1 id="editor-title" tabindex="-1">Make it yours.</h1><p>Adjust any part of the plan before saving.</p>
+<p class="eyebrow">YOUR PLAN</p><h1 id="editor-title" tabindex="-1">Make it yours.</h1><p>Make the plan fit your actual week. Future-you also has errands.</p>
 <details id="plan-context" class="follow-up"></details><form id="plan"><label>90-day goal<textarea name="goal" required></textarea></label><label>Weekly action<textarea name="action" required></textarea></label><label>What to track<input name="tracker" required></label><label>Reflection prompt<textarea name="prompt" required></textarea></label><div class="actions"><button type="button" class="quiet" id="cancel-edit">Back</button><button>Save plan</button></div></form>
 </section>
 <section id="dashboard" hidden></section><section id="discover" hidden></section>
@@ -51,7 +51,7 @@
 <section id="fun" hidden>
 <div class="section-intro">
 <h1 id="fun-title" tabindex="-1">Make room for fun.</h1>
-<p>What would you do today just because you’d enjoy it? Five minutes counts.</p>
+<p>Pick something you’d do just because you like it. Five minutes counts. It’s fun. There’s no timesheet.</p>
 </div>
 <nav class="fun-sections" aria-label="Fun sections">
 <button type="button" class="quiet" data-fun-section="fun-bingo-title">Bucket List Bingo</button>
@@ -67,7 +67,7 @@
 </div>
 <div class="fun-body">
 <article class="fun-reflection bucket-card">
-<h2 id="fun-bingo-title" tabindex="-1">Bucket List Bingo</h2><p>Add something you’d love to do. Tap its square when you’ve done it.</p>
+<h2 id="fun-bingo-title" tabindex="-1">Bucket List Bingo</h2><p>Add something you’d love to do. Tap its square when you do it. If it’s a tiny adventure, it still gets a square.</p>
 <form id="bucket-form"><label>What’s on your list?<input id="bucket-name" maxlength="160" required placeholder="Go to a college game"></label><button>Add to my board</button></form>
 <details id="bucket-inspo"><summary>Need inspo?</summary></details>
 <p id="bucket-progress"></p><div id="bucket-board" aria-label="Bucket list board" role="group"></div><div class="actions"><button id="bucket-prev" class="quiet">Previous board</button><button id="bucket-next" class="quiet">Next board</button></div><p id="bucket-status" role="status"></p>
@@ -108,7 +108,7 @@
 </form>
 </dialog>
 <dialog id="data"><h2>Your data</h2><p>Your dashboard, Discover answers, and welcome starting point are stored in this browser profile. The vault uses a separate passphrase. The JSON export includes the encrypted vault, and excludes attached reports. Download reports from the test results panel. Deleting your data also removes those files.</p><div class="actions"><button class="quiet" id="export">Export JSON</button><button class="danger" id="delete">Delete my data</button></div><div id="delete-confirm" hidden><p>Permanently delete your entries, vault, and attached reports from this browser?</p><div class="actions"><button type="button" id="cancel-delete">Keep my data</button><button type="button" class="danger" id="confirm-delete">Yes, delete my data</button></div></div><p role="status" id="delete-status"></p><form method="dialog"><button class="quiet">Close</button></form></dialog>
-<dialog id="review"><h2>Check-in</h2><p id="reflection"></p><form id="review-form"><label>What happened?<textarea name="notes" required></textarea></label><label>Did you take your planned action?<select name="outcome" required><option value="">Choose an outcome</option><option>Completed</option><option>Partly completed</option><option>Skipped</option></select></label><label>What will you adjust next? <small>Optional</small><textarea name="adjustment"></textarea></label><label id="apply-label"><input type="checkbox" name="apply"> Use the adjustment as my next action</label><label>What evidence did you collect? <small>Optional</small><textarea name="evidence" aria-describedby="evidence-prompt"></textarea><small id="evidence-prompt"></small></label>
+<dialog id="review"><h2>Check-in</h2><p id="reflection"></p><form id="review-form"><label>What happened?<textarea name="notes" required placeholder="The version you’d text a friend is plenty."></textarea></label><label>Did you take your planned action?<select name="outcome" required><option value="">Choose an outcome</option><option>Completed</option><option>Partly completed</option><option>Skipped</option></select></label><label>What will you adjust next? <small>Optional</small><textarea name="adjustment"></textarea></label><label id="apply-label"><input type="checkbox" name="apply"> Use the adjustment as my next action</label><label>What evidence did you collect? <small>Optional</small><textarea name="evidence" aria-describedby="evidence-prompt"></textarea><small id="evidence-prompt"></small></label>
 <label id="skill-check">How would you rate your skill today? <small>Optional</small><select name="rating"><option value="">Choose a rating</option><option value="1">1 · Beginning</option><option value="2">2 · Learning</option><option value="3">3 · Practicing</option><option value="4">4 · Independent</option><option value="5">5 · Consistent</option></select></label>
 <div class="actions"><button type="button" class="quiet" id="close-review">Cancel</button><button>Save check-in</button></div></form></dialog>
 <p id="notice" role="status"></p>

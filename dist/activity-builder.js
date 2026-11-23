@@ -39,7 +39,7 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
     details.append(useLast);
   }
   const generate = node('button', 'Draft activity with AI');
-  const status = node('p', '', 'inline-status');
+  const status = node('p', '', 'inline-status activity-coach');
   status.setAttribute('role', 'status');
   const preview = node('div', '');
   const library = node('div', '');
@@ -86,11 +86,11 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
     clarifications.push(...extra);
     generate.disabled = true;
     preview.replaceChildren();
-    status.textContent = 'Preparing your activity…';
+    status.textContent = 'Putting together your first move. Even good ideas need a calendar slot…';
     try {
       const result = await requestInsight({ mode: 'activity-builder', input: JSON.stringify({ ...context, clarifications }) });
       if (result.questions.length) {
-        preview.append(node('h3', 'A little more detail'));
+        preview.append(node('h3', 'Quick reality check'));
         const followUp = node('form', '');
         const fields = result.questions.map(question => [question, field(followUp, question, '', 800)]);
         for (const [, input] of fields) input.required = true;
@@ -105,7 +105,7 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
           draft(answers, key);
         };
         preview.append(followUp);
-        status.textContent = 'Answer the questions to make the activity fit your situation.';
+        status.textContent = 'Help me aim this thing. A sentence or two is plenty.';
         fields[0][1].focus();
         return;
       }
@@ -134,7 +134,7 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
         if (save({ ...current, savedActivities: [activity, ...(current.savedActivities || [])] })) {
           store.disabled = true;
           renderSaved();
-          status.textContent = 'Activity saved.';
+          status.textContent = 'Saved. Look at you, making future-you’s job easier.';
         }
       });
       const actions = node('div', '', 'actions');
@@ -161,14 +161,14 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
           if (save(withTimeline(current, { ...timeline, steps: updated }))) {
             apply.disabled = true;
             notify('Activity added to your next Roadmap milestone.');
-            status.textContent = 'Your Roadmap next move and progress measure are updated.';
+            status.textContent = 'Your next move is on the Roadmap. Future-you has the assignment.';
           }
         }, 'quiet');
         actions.append(apply);
       }
       editor.append(actions);
       preview.append(editor);
-      status.textContent = 'Edit anything before saving or using this activity.';
+      status.textContent = 'Does it fit your actual life? Tweak any part before you save or use it.';
     } catch (error) {
       status.textContent = error.message;
     } finally {
@@ -178,7 +178,10 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
 
   form.append(generate, details);
   form.onsubmit = event => { event.preventDefault(); draft(); };
-  root.append(node('p', 'Drafting sends what you enter to OpenAI. You can choose to include your plan and accepted report summary under context.'),
+  const coachingPrompt = skillMode
+    ? 'Name one thing you’d like to get better at. “Become a whole new person by Thursday” can wait.'
+    : 'Give me the rough idea. Half a sentence absolutely counts.';
+  root.append(node('p', coachingPrompt, 'activity-coach'), node('p', 'Drafting sends what you enter to OpenAI. You can choose to include your plan and accepted report summary under context.'),
     form, status, preview, library);
   renderSaved();
   return root;

@@ -249,7 +249,7 @@ function dashboard() {
   }
   const history = node('article', '');
   history.append(node('h2', `Check-in history (${reviews.length})`));
-  if (!reviews.length) history.append(node('p', 'Your first check-in will appear here.'));
+  if (!reviews.length) history.append(node('p', 'Try one small action, then tell future-you how it went. Your first check-in will show up here.'));
   for (const review of [...reviews].reverse()) {
     const entry = node('details', '', 'follow-up');
     entry.append(node('summary', `${date.format(new Date(review.date))} · ${review.outcome}`),
