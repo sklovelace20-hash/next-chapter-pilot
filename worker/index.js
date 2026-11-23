@@ -59,7 +59,7 @@ export async function reflect(request, env) {
     }
     const payload = JSON.parse(raw + decoder.decode());
     if (typeof payload === 'string') input = payload;
-    else if (payload && ['journey-round', 'journey-final', 'plan-output', 'assessment', 'plan-tailoring', 'personality-refresh', 'activity-builder'].includes(payload.mode)) {
+    else if (payload && ['journey-round', 'journey-final', 'journey-target', 'plan-output', 'assessment', 'plan-tailoring', 'personality-refresh', 'activity-builder'].includes(payload.mode)) {
       input = payload.input;
       mode = payload.mode;
       if (mode === 'assessment') document = payload.document;
@@ -105,6 +105,8 @@ export async function reflect(request, env) {
   }
   const guidance = mode === 'personality-refresh'
     ? 'Refresh the personality summary using the supplied answer patterns and rubric. Treat them as self-reported preferences in specific situations, not ability, diagnosis, or a fixed type. Respect the person’s corrections and note context-dependent or partial results. Give one concise overview, up to three specific insights, and exactly five short open follow-up questions asking for concrete examples. If a Roadmap milestone was supplied, use profile.tryNext for one small action tied to the same goal and milestone. Preserve any relevant report-backed timing or duration. Leave profile.tryNext empty if the existing move already fits or no change is supported.'
+    : mode === 'journey-target'
+      ? 'Draft an editable 90-day outcome in profile.goal and one concrete first action in profile.tryNext for the selected area. Use the person’s actual interests, accepted interpretations, corrections, and stated timing or constraints. Preserve existing field text and draft its missing counterpart. Prefer observable progress they control. For exploratory answers, suggest a small experiment. Never invent a schedule, skill, or setting unrelated to the answers. If the selected area has insufficient evidence, ask one focused question instead of guessing. Keep overview to one short sentence, omit unrelated profile fields and leave insights empty.'
     : mode === 'journey-round'
     ? 'For this discovery round, distinguish observations from assumptions and generate exactly 10 distinct, short follow-up questions grounded in the answers. Ask for concrete examples and alternatives.'
     : mode === 'journey-final'
