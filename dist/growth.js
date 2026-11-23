@@ -1,3 +1,4 @@
+import { savedAnswers } from './saved-answers.js';
 import { careerQuestions, reflections } from './discovery-content.js';
 import { personalityEvidence, planQuestions, priorityQuestion } from './deeper.js';
 
@@ -66,6 +67,7 @@ export function mirrorSources(state) {
   const responses = ['reflection', 'career'].flatMap((section) => Object.entries(d[section] || {}).flatMap(([key, entry]) =>
     source(prompts[key] || key, entry.answer).concat(source('Follow-up answer', entry.follow), source('Further clarification', entry.clarify))));
   return [
+    ['Saved answers', savedAnswers(state)],
     ['My insights', (state.personalInsights || []).map((value, i) => ['Insight ' + (i + 1), value])],
     ['Plan and priorities', [
       ...record('Setup answer', state.answers), ...record('Plan', state.plan),

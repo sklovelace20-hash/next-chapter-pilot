@@ -1,3 +1,4 @@
+import { archiveAnswers } from './saved-answers.js';
 import { everydayTools } from './everyday-tools.js';
 import { valueCards } from './value-cards.js';
 import { aiMirror } from './ai-mirror.js';
@@ -157,11 +158,11 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
     const saved = existing[key] || {};
     const card = panel(question, `Question ${promptIndex + 1} of ${questions.length}`);
     const form = document.createElement('form');
-    const answer = field(form, 'Your reflection', saved.answer);
+    const answer = field(form, 'Your reflection', '');
     const detail = node('details', '', 'follow-up');
     const label = node('summary', 'Go deeper');
     detail.append(label);
-    const follow = field(detail, followUp, saved.follow);
+    const follow = field(detail, followUp, '');
     const thirdQuestion = {
       stuck: 'What feels at stake if you do take the next step? What would make it feel safer to try?',
       block: 'What did you learn to expect? What would you need to see to reconsider it?',
@@ -170,7 +171,7 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
       alignment: 'What would make that different action hard? What support would make it more realistic?',
       desire: 'What part of that change is available in your current role? What still needs exploring?'
     }[key] || 'What makes that significant to you, and what would you like to understand better?';
-    const clarify = field(detail, thirdQuestion, saved.clarify);
+    const clarify = field(detail, thirdQuestion, '');
     detail.open = Boolean(saved.follow || saved.clarify);
     detail.classList.add('discover-extra');
     const next = () => {
@@ -179,7 +180,11 @@ export function discovery({ get, node, button, read, save, notify, applyPractice
       else openPage('/discover?topic=insights');
     };
     const saveAnswer = submit(form, 'Save and continue', () => {
-      if (write({ [name]: { ...existing, [key]: { answer: answer.value.trim(), follow: follow.value.trim(), clarify: clarify.value.trim() } } })) next();
+      const added = [[question, answer.value.trim()], [followUp, follow.value.trim()], [thirdQuestion, clarify.value.trim()]].filter(([,value]) => value);
+      if (!added.length) return notify('Write an answer or choose Skip for now.');
+      const current = read();
+      const patch = Object.fromEntries([['answer',answer],['follow',follow],['clarify',clarify]].filter(([,input]) => input.value.trim()).map(([k,input]) => [k,input.value.trim()]));
+      if (save(archiveAnswers(current, { ...current, discovery: { ...data(), [name]: { ...existing, [key]: { ...saved, ...patch } } } }, added))) next();
     });
     const actions = node('div', '', 'discover-actions');
     actions.append(saveAnswer);

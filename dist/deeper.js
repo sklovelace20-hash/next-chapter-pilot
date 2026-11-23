@@ -1,3 +1,4 @@
+import { archiveAnswers } from './saved-answers.js';
 import { traits } from './discovery-content.js';
 
 export const priorityQuestion = 'What’s most important to you right now?';
@@ -87,10 +88,10 @@ export function deeperJourney({ read, save, node, button, notify }) {
       form.append(edit);
     }
     form.append(node('h3', topic));
-    const answer = textField(form, question, entry?.answer);
+    const answer = textField(form, question);
     const detail = node('details', '', 'follow-up');
     detail.append(node('summary', 'Go deeper'));
-    const clarify = textField(detail, follow, entry?.follow);
+    const clarify = textField(detail, follow);
     detail.open = Boolean(entry?.follow);
     form.append(detail, node('button', 'Save reflection'));
     form.onsubmit = (event) => {
@@ -104,7 +105,7 @@ export function deeperJourney({ read, save, node, button, notify }) {
       if (value) weeks[when] = value;
       if (reply || deeperReply) entries[id] = { topic, question, answer: reply, followQuestion: follow, follow: deeperReply, date: new Date().toISOString() };
       if (!value && !reply && !deeperReply) return notify('Add a response you want to save.');
-      if (saveJourney({ weeks, entries })) {
+      if (save(archiveAnswers(read(), { ...read(), deeper: { ...state, weeks, entries } }, [[question, reply], [follow, deeperReply], [priorityQuestion, value]]))) {
         const replacement = today();
         article.replaceWith(replacement);
         replacement.querySelector('h2').focus();

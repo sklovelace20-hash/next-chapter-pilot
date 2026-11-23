@@ -1,3 +1,4 @@
+import { savedAnswers } from './saved-answers.js';
 import { requestInsight } from './assessment.js';
 import { timelineFor, withTimeline } from './project-tracker.js';
 
@@ -27,7 +28,7 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
   const contextLabel = node('label', '');
   const includeContext = node('input', '');
   includeContext.type = 'checkbox';
-  contextLabel.append(includeContext, node('span', ' Also use my plan and accepted report summary'));
+  contextLabel.append(includeContext, node('span', ' Also use my plan, saved answers, and accepted report summary'));
   details.append(contextLabel);
   const remembered = (state.activityReflections || []).at(-1);
   if (!skillMode && remembered) {
@@ -73,6 +74,7 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
         goal: latest.plan?.goal,
         skill: latest.roadmap?.skill || latest.growth?.confirmed?.skill,
         gap: latest.roadmap?.gap,
+        savedAnswers: savedAnswers(latest).slice(-12).map(([q,a]) => [q.slice(0,300),a.slice(0,700)]),
         acceptedAssessment: latest.assessment?.summary
       } : undefined
     };
@@ -181,7 +183,7 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
   const coachingPrompt = skillMode
     ? 'Name one thing you’d like to get better at. “Become a whole new person by Thursday” can wait.'
     : 'Give me the rough idea. Half a sentence absolutely counts.';
-  root.append(node('p', coachingPrompt, 'activity-coach'), node('p', 'Drafting sends what you enter to OpenAI. You can choose to include your plan and accepted report summary under context.'),
+  root.append(node('p', coachingPrompt, 'activity-coach'), node('p', 'Drafting sends what you enter to OpenAI. You can choose to include your plan, saved answers, and accepted report summary under context.'),
     form, status, preview, library);
   renderSaved();
   return root;

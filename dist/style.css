@@ -751,6 +751,13 @@ body #fun > .section-intro :is(h1,p) { color: inherit; }
   #discover .value-actions button { padding: 6px 10px; }
 }
 
+#notice.coach-pop:not(:empty) { z-index: 20; background: #392453; color: white; border: 2px solid #cab5ff; box-shadow: 0 4px 18px #291a4930; pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) {
+  #notice.coach-pop:not(:empty) { animation: coach-arrive .2s ease-out; }
+  @keyframes coach-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+}
+#site-coach { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25em .65em; margin: .5rem 0; padding: .55rem .8rem; background: #f1ebff; color: #392453; border-radius: .5rem; }
+#site-coach strong { white-space: nowrap; }
 .activity-builder { margin-block: 0 18px; }
 .activity-coach:not(:empty) {
   padding: 8px 12px;

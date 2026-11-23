@@ -1,3 +1,4 @@
+import { archiveAnswers, savedAnswers } from './saved-answers.js';
 import { activityBuilder } from './activity-builder.js';
 import { projectTracker } from './project-tracker.js';
 import { everydayTools, learningCards } from './everyday-tools.js';
@@ -74,7 +75,7 @@ export function hubEvidence(state, section) {
       ['Overview I accepted', confirmed.acceptedReflection?.overview], ...reviews.slice(-4).flatMap((review) => [['Recent check-in', review.notes], ['What I observed', review.evidence]]),
       ...mirrorSources(state).flatMap(([, entries]) => entries)]
   };
-  return { entries: validPairs([...common, ...(evidence[section] || []), ...Object.entries(state.planHub?.[section]?.responses || {}), ['My values exercise', state.planHub?.[section]?.tradeoff]]), selected, skills };
+  return { entries: validPairs([...common, ...savedAnswers(state), ...(evidence[section] || []), ...Object.entries(state.planHub?.[section]?.responses || {}), ['My values exercise', state.planHub?.[section]?.tradeoff]]), selected, skills };
 }
 
 export function planHub({ host, read, save, node, button, notify, activities, accomplishments, openPage, openAccomplishments, openLibrary, addPractice, assessment, planSettings, refreshPersonality }) {
@@ -330,7 +331,7 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
     const responses = prompts.map((question, index) => {
       const label = node('label', question);
       const input = node('textarea', '');
-      input.value = saved.responses?.[question] || '';
+      input.value = '';
       if (!index && ['goals', 'stretch', 'learning'].includes(key)) {
         input.placeholder = 'One real example beats a TED Talk.';
       }
@@ -343,7 +344,12 @@ export function planHub({ host, read, save, node, button, notify, activities, ac
       event.preventDefault();
       const previous = read().planHub?.[key]?.responses || {};
       const newAnswers = Object.fromEntries(responses.map(([question, input]) => [question, input.value.trim()]));
-      if (persist({ responses: { ...previous, ...newAnswers } })) notify('Answers saved.');
+      const added = Object.entries(newAnswers).filter(([,answer]) => answer);
+      if (!added.length) return notify('Write an answer to save.');
+      const current = read();
+      const section = current.planHub?.[key] || {};
+      const next = { ...current, planHub: { ...current.planHub, [key]: { ...section, responses: { ...previous, ...Object.fromEntries(added) } } } };
+      if (save(archiveAnswers(current, next, added))) { render(key); notify('Added to Saved answers.'); }
     };
     if (key !== 'activities') primary.append(form);
     else if (saved.accepted || Object.keys(saved.responses || {}).length) {

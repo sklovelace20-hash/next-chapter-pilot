@@ -1,3 +1,4 @@
+import { savedAnswers } from './saved-answers.js';
 import { bucketBingo } from './bucket-bingo.js';
 import { clearReports, assessmentPanel, requestInsight } from './assessment.js';
 import { pageAt, viewRoutes } from './routes.js';
@@ -24,6 +25,7 @@ let noticeTimer;
 
 function notify(message) {
   clearTimeout(noticeTimer);
+  get('notice').classList.remove('coach-pop');
   get('notice').textContent = message;
   noticeTimer = setTimeout(() => { get('notice').textContent = ''; }, 5500);
 }
@@ -35,10 +37,49 @@ try {
   notify('Saved data could not be read in this browser.');
 }
 
+function refreshAnswers() {
+  const box = get('past-answers').querySelector('div');
+  const pairs = new Map(savedAnswers(state).map(pair => [JSON.stringify(pair), pair]));
+  box.replaceChildren(...[...pairs.values()].reverse().map(([question, answer]) => {
+    const entry = node('article', '');
+    entry.append(node('strong', question), node('p', answer));
+    return entry;
+  }));
+  if (!pairs.size) box.textContent = 'Your saved answers will appear here.';
+}
+function completionMessage(before, after) {
+  const advanced = Object.entries(after.completedActivities || {}).some(([id, done]) =>
+    done && !before.completedActivities?.[id]);
+  const priorSteps = before.projectTracker?.steps || [];
+  const finished = (after.projectTracker?.steps || []).some(step =>
+    step.done && priorSteps.some(old => old.id === step.id && !old.done));
+  if (advanced || finished) {
+    const steps = after.projectTracker?.steps;
+    if (steps?.length && steps.every(step => after.completedActivities?.[step.id] ?? step.done)) {
+      return 'Goal complete. Look at that whole plan you just finished.';
+    }
+    return 'Activity complete. You did the thing. Take the win.';
+  }
+  if (after.plan?.goal && after.plan.goal !== before.plan?.goal) return 'Goal saved. Future-you has a direction.';
+  if ((after.savedActivities?.length || 0) > (before.savedActivities?.length || 0)) return 'Activity saved. That idea officially has a job.';
+  if (after.answerHistory !== before.answerHistory ||
+      (after.journey?.stage === 'review' && before.journey?.stage !== 'review') ||
+      (after.discovery?.traits && after.discovery.traits !== before.discovery?.traits) ||
+      (after.answers && after.answers !== before.answers && Object.values(after.answers).some(Boolean))) {
+    return 'Answer saved. One less thought doing laps in your head.';
+  }
+  return '';
+}
 function save(next) {
   try {
     localStorage.setItem(key, JSON.stringify(next));
+    const celebration = completionMessage(state, next);
     state = next;
+    if (celebration) queueMicrotask(() => {
+      notify('Hype coach · ' + celebration);
+      get('notice').classList.add('coach-pop');
+    });
+    refreshAnswers();
     return true;
   } catch {
     notify('This browser could not save your changes. Check that browser storage is enabled.');
@@ -47,6 +88,19 @@ function save(next) {
 }
 
 function show(id, focus, path = viewRoutes[id] || '/') {
+  const coach = {
+    home: 'Pick one thing you’re curious about. That counts as starting.',
+    dashboard: 'What’s one thing you actually tried? The messy version counts.',
+    discover: 'Start with the question that made you pause. That one usually has a story.',
+    roadmap: 'Pick your next move. The other eighty-nine days can wait their turn.',
+    output: 'Grab one idea and give it a test drive. You can edit the plan later.',
+    library: 'Find one thing worth trying. Collecting open tabs is already a well-practiced skill.',
+    accomplishments: 'Give yourself credit for one thing today. Yes, the small thing.',
+    fun: 'Pick something just because you like it. A remarkably valid reason.',
+    vault: 'Take your time. You decide what to write here.'
+  };
+  get('site-coach').querySelector('span').textContent = coach[id] || 'Start with one honest answer. Bullet points are absolutely allowed.';
+  refreshAnswers();
   if (id === 'fun') refreshBucket();
   if (window.location.pathname + window.location.search !== path) window.history.pushState(null, '', path);
   if (id !== 'vault' && !get('vault').hidden && get('vault').hasChildNodes()) tools.lock();
