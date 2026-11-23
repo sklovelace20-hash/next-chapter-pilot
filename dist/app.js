@@ -17,7 +17,11 @@ import { discovery } from './discovery.js';
 import { personalityRefresh } from './personality-refresh.js';
 
 const get = (id) => document.getElementById(id);
-const key = 'next-chapter-pilot-v1';
+const baseKey = 'next-chapter-pilot-v1';
+const generationKey = baseKey + '-generation';
+let generation = null;
+let key = baseKey;
+let savedSnapshot = null;
 const blank = () => ({ answers: {}, plan: null, started: null, reviews: [] });
 let state = blank();
 let step = 0;
@@ -32,7 +36,10 @@ function notify(message) {
 }
 
 try {
+  generation = localStorage.getItem(generationKey);
+  key = generation ? baseKey + ':' + generation : baseKey;
   const saved = localStorage.getItem(key);
+  savedSnapshot = saved;
   if (saved) state = JSON.parse(saved);
 } catch {
   notify('Saved data could not be read in this browser.');
@@ -73,7 +80,13 @@ function completionMessage(before, after) {
 }
 function save(next) {
   try {
-    localStorage.setItem(key, JSON.stringify(next));
+    if (localStorage.getItem(generationKey) !== generation || localStorage.getItem(key) !== savedSnapshot) {
+      location.reload();
+      return false;
+    }
+    const encoded = JSON.stringify(next);
+    localStorage.setItem(key, encoded);
+    savedSnapshot = encoded;
     const celebration = completionMessage(state, next);
     state = next;
     if (celebration) queueMicrotask(() => {
@@ -463,6 +476,13 @@ deleteButton.onclick = async () => {
   deleteButton.disabled = true;
   deleteStatus.textContent = 'Deleting saved data…';
   tools.lock();
+  try {
+    localStorage.setItem(generationKey, crypto.randomUUID());
+  } catch {
+    deleteStatus.textContent = 'Deletion could not start. Check browser storage.';
+    deleteButton.disabled = false;
+    return;
+  }
   const failed = [];
   for (const [storageKey, label] of [[key, 'dashboard entries'], [vaultKey, 'vault']]) {
     try { localStorage.removeItem(storageKey); }
@@ -479,6 +499,13 @@ deleteButton.onclick = async () => {
   location.replace('/?deleted=1');
 };
 
+function refreshExternalProfile() {
+  if (localStorage.getItem(generationKey) !== generation || localStorage.getItem(key) !== savedSnapshot) location.reload();
+}
+window.addEventListener('storage', event => {
+  if ([null, generationKey, key].includes(event.key)) refreshExternalProfile();
+});
+window.addEventListener('pageshow', event => { if (event.persisted) refreshExternalProfile(); });
 const openCurrentPage = () => openPage(window.location.pathname + window.location.search);
 window.addEventListener('popstate', openCurrentPage);
 const justDeleted = location.search === '?deleted=1';

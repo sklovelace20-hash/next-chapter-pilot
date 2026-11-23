@@ -41,7 +41,7 @@ export async function requestInsight(payload) {
 export function assessmentPanel({ read, save, node, button, notify }) {
   const box = node('details', '', 'follow-up assessment-panel');
   box.append(node('summary', 'Add reports or test results'),
-    node('p', 'Save PDF, PNG, JPEG, or text reports in this browser. To use them in AI questions, insights, and Roadmap suggestions, generate and accept a summary. Generating a summary sends the chosen files (up to 2 MB each) or pasted text to OpenAI.'));
+    node('p', 'Save up to 10 original reports in this browser (2 MB each, 12 MB total). Deleting a file keeps its accepted summary and saved plans. To use them in AI questions, insights, and Roadmap suggestions, generate and accept a summary. Generating a summary sends the chosen files (up to 2 MB each) or pasted text to OpenAI.'));
   const fileLabel = node('label', 'Test results file');
   const upload = document.createElement('input');
   upload.type = 'file';
@@ -77,8 +77,17 @@ export function assessmentPanel({ read, save, node, button, notify }) {
         const link = node('a'); link.href = url; link.download = file.name; link.click();
         setTimeout(() => URL.revokeObjectURL(url), 30000);
       }, 'quiet'));
+      row.append(button('Delete report', async () => {
+        if (!window.confirm('Delete ' + file.name + ' from this browser? Your accepted summary and plans will be kept.')) return;
+        try {
+          await reportTransaction('readwrite', store => store.delete(id));
+          await refresh();
+          status.textContent = 'Report deleted.';
+        } catch { status.textContent = 'Could not delete the report.'; }
+      }, 'quiet'));
       savedFiles.append(row);
     }
+    generateAll.textContent = 'Summarize all saved reports (' + reports.length + ')';
     picker.value = previous;
     pickerLabel.hidden = generateAll.hidden = !reports.length;
   }
@@ -88,15 +97,31 @@ export function assessmentPanel({ read, save, node, button, notify }) {
     if (files.some(file => !file.size || !allowed.includes(file.type || extensions[file.name.split('.').pop().toLowerCase()]))) {
       status.textContent = 'Choose nonempty PDF, PNG, JPEG, or text files.'; return;
     }
+    if (files.length > 10 || files.some(file => file.size > 2 * 1024 * 1024)) {
+      status.textContent = 'Choose up to 10 files, each 2 MB or less.';
+      return;
+    }
     submit.disabled = upload.disabled = true;
+    let limitExceeded = false;
     try {
       await reportTransaction('readwrite', store => {
-        for (const file of files) store.put({id: JSON.stringify([file.name,file.size,file.lastModified]), file});
+        const entries = files.map(file => ({id: JSON.stringify([file.name,file.size,file.lastModified]),file}));
+        const current = store.getAll();
+        current.onsuccess = () => {
+          const sizes = new Map(current.result.map(row => [row.id,row.file.size]));
+          for (const row of entries) sizes.set(row.id,row.file.size);
+          if (sizes.size > 10 || [...sizes.values()].reduce((a,b) => a+b,0) > 12 * 1024 * 1024) {
+            limitExceeded = true;
+            store.transaction.abort();
+            return;
+          }
+          for (const row of entries) store.put(row);
+        };
       });
       upload.value = '';
       await refresh();
       status.textContent = files.length === 1 ? '1 report saved in this browser.' : files.length + ' reports saved in this browser.';
-    } catch { status.textContent = 'Could not confirm the save. Check browser storage and try again.'; }
+    } catch { status.textContent = limitExceeded ? 'Report storage is limited to 10 files and 12 MB. Remove a report and retry.' : 'Could not confirm the save. Check browser storage and try again.'; }
     finally { submit.disabled = upload.disabled = false; }
   });
   const draft = node('div', '');
@@ -128,6 +153,8 @@ export function assessmentPanel({ read, save, node, button, notify }) {
   }
 
   async function generateDraft(files, typed = '') {
+    if (files.length > 5) { status.textContent = 'Choose at most five reports per AI batch.'; return; }
+    if (files.length > 1 && !window.confirm('Send ' + files.length + ' reports to OpenAI? This uses one AI request per report.')) return;
     let completed = 0;
     generate.disabled = generateAll.disabled = submit.disabled = true;
     draft.replaceChildren();
