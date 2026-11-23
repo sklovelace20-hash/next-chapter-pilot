@@ -17,7 +17,7 @@ export function timelineFor(state) {
       id: task.id, days: task.days, goal: task.goal, title: current('title'), skill: current('skill'),
       evidence: current('evidence'), action: current('action'), today: current('today'),
       generated,
-      homeUndo: Boolean(sameGoal && previous?.homeUndo),
+      homeUndo: sameGoal && previous?.homeUndo || false,
       done: Boolean((!previous || sameGoal) && (state.completedActivities?.[task.id] ?? previous?.done)),
       notes: (!previous || sameGoal) ? (state.activityNotes?.[task.id] ?? previous?.notes ?? '') : ''
     };

@@ -23,7 +23,16 @@ export function personalOS(host, read, save, node, query = '') {
   title.tabIndex = -1;
   const tracker = timelineFor(state);
   const steps = tracker?.steps || [];
-  const undoIndex = steps.findIndex(step => step.done && step.homeUndo);
+  let undoIndex = -1;
+  let latestCompletion = 0;
+  steps.forEach((step, index) => {
+    // Older saves use true for the one completion they remember.
+    const order = Number(step.homeUndo);
+    if (step.done && order > latestCompletion) {
+      latestCompletion = order;
+      undoIndex = index;
+    }
+  });
   const next = steps.find(step => !step.done);
   const overview = node('section','','os-overview');
   overview.append(node('h2',state.plan?.goal || 'Your plan at a glance'),
@@ -36,8 +45,8 @@ export function personalOS(host, read, save, node, query = '') {
       return;
     }
     const updated = steps.map((step, i) => {
-      if (i === index) return { ...step, done, homeUndo: done };
-      return step.homeUndo ? { ...step, homeUndo: false } : step;
+      if (i === index) return { ...step, done, homeUndo: done ? latestCompletion + 1 : false };
+      return step;
     });
     if (save(withTimeline(state, { ...tracker, steps: updated }))) {
       personalOS(host, read, save, node, search.value);
