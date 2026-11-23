@@ -17,12 +17,18 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
     return input;
   }
   root.append(node('h2', skillMode ? 'Build a skill activity' : 'Make an activity actionable'));
-  const idea = field(form, skillMode ? 'What skill gap do you want to work on?' : 'What activity would you like to try?',
-    skillMode ? state.roadmap?.gap : state.roadmap?.practice || state.plan?.action, 2400);
+  const idea = field(form, skillMode ? 'What do you want to get better at?' : 'What activity would you like to try?', '', 2400);
+  idea.placeholder = skillMode ? 'I want to give clearer updates in team meetings.' :
+    'I want to spend five minutes after dinner preparing for tomorrow.';
   idea.required = true;
   const details = node('details', '', 'follow-up');
   details.append(node('summary', 'Add context or constraints'));
   const constraints = field(details, 'Time, setting, available help, or anything that might get in the way', '', 1600);
+  const contextLabel = node('label', '');
+  const includeContext = node('input', '');
+  includeContext.type = 'checkbox';
+  contextLabel.append(includeContext, node('span', ' Also use my plan and accepted report summary'));
+  details.append(contextLabel);
   const remembered = (state.activityReflections || []).at(-1);
   if (!skillMode && remembered) {
     const useLast = button('Use my latest activity reflection', () => {
@@ -63,10 +69,12 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
       purpose: skillMode ? 'practice a skill gap' : 'clarify an activity',
       idea: detail,
       constraints: constraints.value.trim(),
-      goal: latest.plan?.goal,
-      skill: latest.roadmap?.skill || latest.growth?.confirmed?.skill,
-      gap: latest.roadmap?.gap,
-      acceptedAssessment: latest.assessment?.summary
+      background: includeContext.checked ? {
+        goal: latest.plan?.goal,
+        skill: latest.roadmap?.skill || latest.growth?.confirmed?.skill,
+        gap: latest.roadmap?.gap,
+        acceptedAssessment: latest.assessment?.summary
+      } : undefined
     };
     const key = JSON.stringify(context);
     if (answerContext && answerContext !== key) {
@@ -170,7 +178,7 @@ export function activityBuilder({ mode, read, save, node, button, notify }) {
 
   form.append(generate, details);
   form.onsubmit = event => { event.preventDefault(); draft(); };
-  root.append(node('p', 'Drafting sends your activity or skill gap, plan context, and any accepted report summary to OpenAI.'),
+  root.append(node('p', 'Drafting sends what you enter to OpenAI. You can choose to include your plan and accepted report summary under context.'),
     form, status, preview, library);
   renderSaved();
   return root;
