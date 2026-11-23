@@ -10,7 +10,8 @@ export const topicRoutes = {
 };
 
 export const viewRoutes = {
-  personal: '/personal-os',
+  personal: '/',
+  dashboard: '/today',
   welcome: '/welcome',
   fun: '/fun',
   journey: '/start',
@@ -27,7 +28,7 @@ export const discoveryTopics = [['profile', 'Personality'], ['values', 'Values']
 
 export const valuesExerciseRoute = '/values/exercise';
 export const pagePaths = [
-  '/', valuesExerciseRoute, ...Object.values(viewRoutes), ...Object.values(topicRoutes)
+  '/personal-os', valuesExerciseRoute, ...Object.values(viewRoutes), ...Object.values(topicRoutes)
 ];
 
 export function pageAt(path) {
@@ -36,6 +37,7 @@ export function pageAt(path) {
   if (clean === '/' && new URLSearchParams(query).get('explore') === '1') {
     return { view: 'dashboard', path: '/?explore=1' };
   }
+  if (clean === '/personal-os') return { view: 'personal', path: clean };
   if (clean === viewRoutes.discover) {
     const requested = new URLSearchParams(query).get('topic');
     if (discoveryTopics.some(([topic]) => topic === requested)) {
@@ -46,5 +48,5 @@ export function pageAt(path) {
   const topic = Object.keys(topicRoutes).find((key) => topicRoutes[key] === clean);
   if (topic) return { view: 'output', section: topic, path: clean };
   const view = Object.keys(viewRoutes).find((key) => viewRoutes[key] === clean);
-  return view ? { view, path: clean } : { view: 'dashboard', path: '/' };
+  return view ? { view, path: clean } : { view: 'personal', path: '/' };
 }

@@ -88,7 +88,7 @@ function save(next) {
   }
 }
 
-function show(id, focus, path = viewRoutes[id] || '/') {
+function show(id, focus, path = id === 'home' ? viewRoutes.dashboard : viewRoutes[id] || '/') {
   const coach = {
     personal: 'What do you need today? Find it here, then get on with the good part.',
     home: 'Pick one thing you’re curious about. That counts as starting.',
@@ -109,7 +109,7 @@ function show(id, focus, path = viewRoutes[id] || '/') {
   for (const page of ['home', 'welcome', 'setup', 'editor', 'journey', 'fun', ...tools.viewIds]) get(page).hidden = page !== id;
   for (const tab of get('workspace-nav').querySelectorAll('button')) {
     tab.hidden = !state.plan && !['personal', 'dashboard', 'discover', 'output', 'roadmap', 'library', 'accomplishments', 'fun'].includes(tab.dataset.view);
-    if (tab.dataset.view === 'dashboard') tab.textContent = state.plan ? 'Today' : 'Home';
+    if (tab.dataset.view === 'dashboard') tab.textContent = 'Today';
   }
   for (const tab of get('workspace-nav').querySelectorAll('button')) {
     if (tab.dataset.view === (id === 'home' ? 'dashboard' : id)) tab.setAttribute('aria-current', 'page');
@@ -263,7 +263,7 @@ function openPage(path) {
   if (view === 'welcome') return welcome.render();
   if (canonical === '/?explore=1') return show('home', 'explore-title', canonical);
   if (view === 'journey') return startingPoint.render();
-  if ((view === 'vault') && !state.plan) return dashboard();
+
   tools.go(view, { section, path: canonical });
 }
 
