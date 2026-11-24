@@ -167,7 +167,7 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
     if (assessmentSummary && !complete) {
       const tailored = node('details', '', 'page-details route-goal');
       tailored.append(node('summary', 'Tailor my next move with my reports'),
-        node('p', 'This sends your accepted report summary, goal, and current milestone or action to OpenAI.'));
+        node('p', 'This sends your accepted report summary, saved answer to “What stands out across what you have shared?”, goal, and current milestone or action to OpenAI.'));
       const suggestion = node('div', '');
       const status = node('p', '', 'inline-status');
       status.setAttribute('role', 'status');
@@ -178,6 +178,7 @@ export function workspace({ get, show, read, save, node, button, notify, dashboa
         try {
           const result = await requestInsight({ mode: 'plan-tailoring', input: JSON.stringify({
             acceptedAssessment: assessmentSummary,
+            reflectionAnswer: read().planHub?.reflection?.responses?.['What stands out across what you have shared?'],
             target: { goal: current?.goal || plan.goal, currentAction: current?.today || plan.action,
               milestone: current?.title, exercise: current?.action, focus: current?.skill || focus }
           }) });
